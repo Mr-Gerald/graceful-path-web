@@ -12,6 +12,7 @@
   "dependencies": {
     "@google/genai": "^1.40.0",
     "@supabase/supabase-js": "^2.48.1",
+    "@vercel/analytics": "^1.6.1",
     "lucide-react": "^0.463.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
