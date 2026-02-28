@@ -33,6 +33,8 @@ const App: React.FC = () => {
   const [userLikes, setUserLikes] = useState<string[]>([]);
   const [otpCode, setOtpCode] = useState('');
   const [isVerifying, setIsVerifying] = useState(false);
+  const [isResending, setIsResending] = useState(false);
+  const [resendSuccess, setResendSuccess] = useState(false);
 
   const [examDate, setExamDate] = useState('April 25, 2026');
   const [brandingAssets, setBrandingAssets] = useState<BrandingAssets>({
@@ -363,6 +365,7 @@ const App: React.FC = () => {
   const handleVerifyOtp = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+    setResendSuccess(false);
     setIsVerifying(true);
     
     const { data, error } = await supabase.auth.verifyOtp({
@@ -374,7 +377,7 @@ const App: React.FC = () => {
     if (error) {
       let friendlyError = error.message;
       if (error.message.toLowerCase().includes('expired')) {
-        friendlyError = "The verification code has expired. Please sign up again to request a new code.";
+        friendlyError = "The verification code has expired. Please request a new code below.";
       } else if (error.message.toLowerCase().includes('invalid')) {
         friendlyError = "The verification code is incorrect. Please check your email and try again.";
       }
@@ -400,6 +403,24 @@ const App: React.FC = () => {
       navigate('/dashboard');
     }
     setIsVerifying(false);
+  };
+
+  const handleResendOtp = async () => {
+    setError('');
+    setResendSuccess(false);
+    setIsResending(true);
+    
+    const { error } = await supabase.auth.resend({
+      type: 'signup',
+      email: registerInput.email
+    });
+
+    if (error) {
+      setError(error.message);
+    } else {
+      setResendSuccess(true);
+    }
+    setIsResending(false);
   };
 
   const handleLogout = async () => {
@@ -660,12 +681,28 @@ const App: React.FC = () => {
                     {isVerifying ? 'Verifying...' : 'Verify Code'}
                   </button>
                 </form>
-                <button 
-                  onClick={() => { setRegSuccess(false); setIsRegistering(false); setError(''); setOtpCode(''); }}
-                  className="mt-6 text-slate-400 font-bold text-sm hover:text-brand-600 transition"
-                >
-                  Cancel and return to login
-                </button>
+                
+                {resendSuccess && (
+                  <div className="mt-4 p-4 bg-green-50 text-green-700 rounded-2xl text-sm font-bold border border-green-100">
+                    A new code has been sent to your email!
+                  </div>
+                )}
+                
+                <div className="mt-6 flex flex-col items-center gap-4">
+                  <button 
+                    onClick={handleResendOtp}
+                    disabled={isResending}
+                    className="text-brand-600 font-bold text-sm hover:text-brand-700 transition disabled:opacity-50"
+                  >
+                    {isResending ? 'Sending...' : "Didn't receive a code? Resend"}
+                  </button>
+                  <button 
+                    onClick={() => { setRegSuccess(false); setIsRegistering(false); setError(''); setOtpCode(''); setResendSuccess(false); }}
+                    className="text-slate-400 font-bold text-sm hover:text-brand-600 transition"
+                  >
+                    Cancel and return to login
+                  </button>
+                </div>
               </div>
             </div>
           );

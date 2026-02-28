@@ -70,6 +70,7 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
   const [userAnswers, setUserAnswers] = useState<Record<string, number>>({});
   const [quizFinished, setQuizFinished] = useState(false);
   const [showCorrections, setShowCorrections] = useState(false);
+  const [showPaywall, setShowPaywall] = useState(false);
   const [selectedDifficulty, setSelectedDifficulty] = useState<'all' | 'easy' | 'medium' | 'hard'>('all');
 
   // Profile Edit States
@@ -102,6 +103,7 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
     setUserAnswers({});
     setQuizFinished(false);
     setShowCorrections(false);
+    setShowPaywall(false);
   };
 
   const handleSelectOption = (optionIndex: number) => {
@@ -112,6 +114,13 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
 
   const handleNextQuestion = () => {
     if (!activeTest) return;
+    
+    // Freemium Paywall Logic: Free users hit a wall after 15 questions
+    if (!user.hasPaidLive && currentQuestionIndex === 14) {
+      setShowPaywall(true);
+      return;
+    }
+
     if (currentQuestionIndex < activeTest.questions.length - 1) {
       setCurrentQuestionIndex(currentQuestionIndex + 1);
     } else {
@@ -119,13 +128,20 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
     }
   };
 
+  const handleUpgradeToPremium = () => {
+    const msg = encodeURIComponent(`Hello Admin, I just completed the free trial and I'm ready to upgrade my Graceful Path account to Premium to unlock all practice tests!`);
+    window.open(`https://wa.me/message/WW3VSMB2DHYUF1?text=${msg}`, '_blank');
+  };
+
   const calculateScore = () => {
     if (!activeTest) return 0;
     let correct = 0;
-    activeTest.questions.forEach(q => {
+    const totalAllowed = !user.hasPaidLive ? Math.min(15, activeTest.questions.length) : activeTest.questions.length;
+    
+    activeTest.questions.slice(0, totalAllowed).forEach(q => {
       if (userAnswers[q.id] === q.correctAnswer) correct++;
     });
-    return Math.round((correct / activeTest.questions.length) * 100);
+    return Math.round((correct / totalAllowed) * 100);
   };
 
   const openAsset = (data: string, title: string) => {
@@ -340,7 +356,7 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
                 {showCorrections && (
                   <div className="mt-12 space-y-8 animate-in slide-in-from-bottom-5 duration-500">
                     <h3 className="text-2xl font-serif font-bold text-slate-900 px-4">Detailed Correction Review</h3>
-                    {activeTest.questions.map((q, i) => (
+                    {activeTest.questions.slice(0, !user.hasPaidLive ? 15 : activeTest.questions.length).map((q, i) => (
                       <div key={q.id} className="bg-white p-10 rounded-[3rem] border border-slate-100 shadow-sm">
                         <div className="flex items-center gap-3 mb-6">
                            <span className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-xs font-black text-slate-500">Q{i+1}</span>
@@ -371,8 +387,66 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
                         </div>
                       </div>
                     ))}
+                    
+                    {!user.hasPaidLive && (
+                      <div className="bg-gradient-to-br from-brand-600 to-brand-800 p-10 rounded-[3rem] text-center shadow-2xl relative overflow-hidden mt-10">
+                        <div className="absolute top-0 right-0 w-64 h-64 bg-white opacity-5 rounded-full blur-3xl transform translate-x-1/2 -translate-y-1/2"></div>
+                        <div className="absolute bottom-0 left-0 w-64 h-64 bg-brand-400 opacity-20 rounded-full blur-3xl transform -translate-x-1/2 translate-y-1/2"></div>
+                        <div className="relative z-10">
+                          <div className="w-20 h-20 bg-white/10 rounded-full flex items-center justify-center mx-auto mb-6 backdrop-blur-sm border border-white/20">
+                            <Lock className="w-10 h-10 text-brand-100" />
+                          </div>
+                          <h3 className="text-3xl font-serif font-bold text-white mb-4">Unlock 105 More Questions</h3>
+                          <p className="text-brand-100 mb-8 max-w-xl mx-auto text-lg">
+                            Imagine having this level of detailed breakdown for all 120 questions. Don't leave your NCLEX success to chance.
+                          </p>
+                          <button 
+                            onClick={handleUpgradeToPremium}
+                            className="bg-white text-brand-900 px-10 py-5 rounded-2xl font-black text-sm uppercase tracking-[0.2em] shadow-xl hover:bg-brand-50 transition transform hover:scale-105"
+                          >
+                            Upgrade to Premium Now
+                          </button>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 )}
+              </div>
+            );
+          }
+
+          if (showPaywall) {
+            return (
+              <div className="animate-in zoom-in duration-300 max-w-3xl mx-auto py-10">
+                <div className="bg-gradient-to-br from-brand-600 to-brand-800 p-12 rounded-[4rem] text-center shadow-2xl relative overflow-hidden">
+                  <div className="absolute top-0 right-0 w-64 h-64 bg-white opacity-5 rounded-full blur-3xl transform translate-x-1/2 -translate-y-1/2"></div>
+                  <div className="absolute bottom-0 left-0 w-64 h-64 bg-brand-400 opacity-20 rounded-full blur-3xl transform -translate-x-1/2 translate-y-1/2"></div>
+                  <div className="relative z-10">
+                    <div className="w-24 h-24 bg-white/10 rounded-full flex items-center justify-center mx-auto mb-8 backdrop-blur-sm border border-white/20">
+                      <Lock className="w-12 h-12 text-brand-100" />
+                    </div>
+                    <h2 className="text-4xl font-serif font-bold text-white mb-4">Great start! Ready to master the rest?</h2>
+                    <p className="text-brand-100 mb-10 max-w-2xl mx-auto text-lg leading-relaxed">
+                      You have successfully completed the foundational question set. To ensure you are fully prepared for the NCLEX, you need exposure to complex, high-level passing standard questions.
+                      <br/><br/>
+                      Join our Premium Cohort today to instantly unlock the remaining 105 questions, advanced difficulty modes, and comprehensive rationales.
+                    </p>
+                    <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                      <button 
+                        onClick={handleUpgradeToPremium}
+                        className="flex-1 bg-white text-brand-900 px-8 py-5 rounded-2xl font-black text-xs uppercase tracking-[0.2em] shadow-xl hover:bg-brand-50 transition transform hover:scale-105"
+                      >
+                        👑 Upgrade to Premium (Contact Admin)
+                      </button>
+                      <button 
+                        onClick={() => { setShowPaywall(false); setQuizFinished(true); }}
+                        className="flex-1 bg-transparent border-2 border-brand-400 text-white px-8 py-5 rounded-2xl font-black text-xs uppercase tracking-[0.2em] hover:bg-brand-700/50 transition"
+                      >
+                        Grade My 15 Questions
+                      </button>
+                    </div>
+                  </div>
+                </div>
               </div>
             );
           }
@@ -401,9 +475,9 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
                     <p className="text-[10px] font-black text-brand-600 uppercase tracking-widest mb-1">{activeTest.title}</p>
                     <div className="flex items-center gap-2">
                       <div className="h-1.5 w-48 bg-slate-100 rounded-full overflow-hidden">
-                        <div className="h-full bg-brand-500 transition-all duration-300" style={{width: `${((currentQuestionIndex + 1) / activeTest.questions.length) * 100}%`}}></div>
+                        <div className="h-full bg-brand-500 transition-all duration-300" style={{width: `${((currentQuestionIndex + 1) / (!user.hasPaidLive ? 120 : activeTest.questions.length)) * 100}%`}}></div>
                       </div>
-                      <span className="text-[10px] font-black text-slate-400">{currentQuestionIndex + 1} / {activeTest.questions.length}</span>
+                      <span className="text-[10px] font-black text-slate-400">{currentQuestionIndex + 1} / {!user.hasPaidLive ? 120 : activeTest.questions.length}</span>
                     </div>
                  </div>
                  <div className="p-3 bg-slate-900 text-white rounded-xl font-mono text-xs flex items-center">
@@ -460,29 +534,58 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
                 <option value="hard">Hard</option>
               </select>
             </div>
+            
+            {!user.hasPaidLive && (
+              <div className="bg-brand-50 border border-brand-100 p-6 rounded-[2rem] mb-8 flex items-start sm:items-center gap-4 shadow-sm">
+                <div className="bg-white p-3 rounded-xl shadow-sm">
+                  <Award className="w-6 h-6 text-brand-600" />
+                </div>
+                <div>
+                  <h4 className="font-bold text-brand-900 text-sm sm:text-base">Free Tier: Foundational NCLEX Review (15 Questions)</h4>
+                  <p className="text-brand-700 text-xs sm:text-sm mt-1">Upgrade to Premium to unlock the complete 120-question mastery bank across all difficulty levels.</p>
+                </div>
+              </div>
+            )}
+
             <div className="space-y-6">
               {practiceTests.filter(test => selectedDifficulty === 'all' || test.difficulty === selectedDifficulty).length === 0 ? (
                 <div className="bg-white p-20 rounded-[3rem] border border-slate-100 text-center">
                   <p className="text-slate-400 font-bold italic">No exams available for this cohort yet.</p>
                 </div>
-              ) : practiceTests.filter(test => selectedDifficulty === 'all' || test.difficulty === selectedDifficulty).map((test, i) => (
-                <div key={i} className="bg-white p-8 rounded-[2.5rem] border border-gray-100 flex flex-col sm:flex-row items-center justify-between group hover:border-brand-500 transition-all duration-300 gap-6 shadow-sm">
-                  <div className="flex items-center w-full">
-                    <div className="bg-slate-50 p-6 rounded-[2rem] mr-8 shadow-inner">
-                      <BarChart3 className="w-10 h-10 text-brand-400 group-hover:text-brand-600 transition" />
+              ) : practiceTests.filter(test => selectedDifficulty === 'all' || test.difficulty === selectedDifficulty).map((test, i) => {
+                const isLocked = !user.hasPaidLive && (test.difficulty === 'medium' || test.difficulty === 'hard');
+                return (
+                  <div key={i} className={`bg-white p-8 rounded-[2.5rem] border border-gray-100 flex flex-col sm:flex-row items-center justify-between group hover:border-brand-500 transition-all duration-300 gap-6 shadow-sm ${isLocked ? 'opacity-80' : ''}`}>
+                    <div className="flex items-center w-full">
+                      <div className="bg-slate-50 p-6 rounded-[2rem] mr-8 shadow-inner relative">
+                        <BarChart3 className="w-10 h-10 text-brand-400 group-hover:text-brand-600 transition" />
+                        {isLocked && (
+                          <div className="absolute -top-2 -right-2 bg-amber-100 text-amber-600 p-2 rounded-full shadow-sm">
+                            <Lock className="w-4 h-4" />
+                          </div>
+                        )}
+                      </div>
+                      <div>
+                        <h4 className="text-2xl font-bold text-slate-900 flex items-center gap-3">
+                          {test.title}
+                          {isLocked && <span className="text-[10px] bg-amber-100 text-amber-700 px-3 py-1 rounded-full uppercase tracking-widest font-black">Premium</span>}
+                        </h4>
+                        <p className="text-sm text-slate-400 font-black uppercase tracking-widest mt-1 flex items-center gap-4">
+                          <span>{test.questions?.length || 0} Professional Questions</span>
+                          <span className="w-1 h-1 bg-slate-200 rounded-full"></span>
+                          <span className="flex items-center"><Clock className="w-3.5 h-3.5 mr-1" /> {test.duration} Limit</span>
+                        </p>
+                      </div>
                     </div>
-                    <div>
-                      <h4 className="text-2xl font-bold text-slate-900">{test.title}</h4>
-                      <p className="text-sm text-slate-400 font-black uppercase tracking-widest mt-1 flex items-center gap-4">
-                        <span>{test.questions?.length || 0} Professional Questions</span>
-                        <span className="w-1 h-1 bg-slate-200 rounded-full"></span>
-                        <span className="flex items-center"><Clock className="w-3.5 h-3.5 mr-1" /> {test.duration} Limit</span>
-                      </p>
-                    </div>
+                    <button 
+                      onClick={() => isLocked ? handleUpgradeToPremium() : handleStartTest(test)} 
+                      className={`${isLocked ? 'bg-amber-500 hover:bg-amber-600' : 'bg-brand-600 hover:bg-brand-700'} text-white px-10 py-5 rounded-2xl font-black text-xs uppercase tracking-[0.2em] shadow-xl transition w-full sm:w-auto transform hover:scale-105`}
+                    >
+                      {isLocked ? 'Unlock Premium' : 'Start Professional Exam'}
+                    </button>
                   </div>
-                  <button onClick={() => handleStartTest(test)} className="bg-brand-600 text-white px-10 py-5 rounded-2xl font-black text-xs uppercase tracking-[0.2em] shadow-xl hover:bg-brand-700 transition w-full sm:w-auto transform hover:scale-105">Start Professional Exam</button>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         );
