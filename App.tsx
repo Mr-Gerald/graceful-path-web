@@ -8,6 +8,7 @@ import { UserRole, User, Review, BrandingAssets } from './types';
 import { COURSES, COUNTRY_LIST } from './constants';
 import { supabase } from './services/supabaseClient';
 import { Mail, CheckCircle2, Globe } from 'lucide-react';
+import { Analytics } from '@vercel/analytics/react';
 
 const App: React.FC = () => {
   const [currentPath, setCurrentPath] = useState<string>(window.location.hash.replace('#', '') || '/');
@@ -724,6 +725,7 @@ const App: React.FC = () => {
     <Layout userRole={currentUser?.role} onNavigate={navigate} currentPath={currentPath} links={globalLinks}>
       {renderContent()}
       <AIChatbot />
+      <Analytics />
     </Layout>
   );
 };
