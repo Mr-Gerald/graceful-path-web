@@ -10,7 +10,7 @@ const getKeys = async () => {
     console.error('Error fetching API keys from Supabase:', error);
     return [];
   }
-  return data.map(row => row.key_value);
+  return data.map(row => row.key_value?.trim()).filter(k => k && k.length > 0);
 };
 
 let currentKeyIndex = 0;
@@ -35,9 +35,9 @@ const callWithKeyRotation = async (fn: (ai: GoogleGenAI) => Promise<any>, onProg
       return await fn(ai);
     } catch (error: any) {
       lastError = error;
-      // If it's a rate limit error (429), switch to next key
-      if (error.message?.includes('429') || error.status === 429) {
-        console.warn(`Rate limit hit for key ${currentKeyIndex}. Switching to next key...`);
+      // If it's a rate limit error (429) or invalid key (400), switch to next key
+      if (error.status === 429 || error.message?.includes('429') || error.status === 400 || error.message?.includes('API key not valid')) {
+        console.warn(`Key issue detected for key ${currentKeyIndex}. Switching to next key...`);
         currentKeyIndex = (currentKeyIndex + 1) % keys.length;
         continue;
       }

@@ -121,13 +121,13 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
   ];
 
   const handleAddApiKey = async () => {
-    const { data, error } = await supabase.from('api_keys').insert({ key_value: '' }).select();
+    const { data, error } = await supabase.from('api_keys').insert({ key_value: '', is_active: true }).select();
     if (data) setApiKeys(prev => [...prev, data[0]]);
     if (error) console.error('Error adding API key:', error);
   };
 
   const handleUpdateApiKey = async (id: string, value: string) => {
-    const { error } = await supabase.from('api_keys').update({ key_value: value }).eq('id', id);
+    const { error } = await supabase.from('api_keys').update({ key_value: value.trim() }).eq('id', id);
     if (error) console.error('Error updating API key:', error);
   };
 

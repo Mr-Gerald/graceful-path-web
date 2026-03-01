@@ -254,27 +254,52 @@ const App: React.FC = () => {
       });
   };
 
+  const latestConfig = React.useRef({
+    brandingAssets,
+    globalLinks,
+    courseContent,
+    practiceTests,
+    materials,
+    geminiKeys,
+    examDate
+  });
+
+  useEffect(() => {
+    latestConfig.current = {
+      brandingAssets,
+      globalLinks,
+      courseContent,
+      practiceTests,
+      materials,
+      geminiKeys,
+      examDate
+    };
+  }, [brandingAssets, globalLinks, courseContent, practiceTests, materials, geminiKeys, examDate]);
+
   const saveSiteConfig = async () => {
     if (currentUser?.role !== UserRole.ADMIN || !hasLoadedInitialData) return;
     setIsSaving(true);
     try {
-      // Save each item individually to ensure one large item doesn't block others
-      // and to provide better error isolation.
+      const currentConfig = latestConfig.current;
       const configs = [
-        { id: 'branding', data: brandingAssets },
-        { id: 'links', data: globalLinks },
-        { id: 'course_content', data: courseContent },
-        { id: 'practice_tests', data: practiceTests },
-        { id: 'materials', data: materials },
-        { id: 'gemini_keys', data: { keys: geminiKeys } },
-        { id: 'exam_date', data: { date: examDate } }
+        { id: 'branding', data: currentConfig.brandingAssets },
+        { id: 'links', data: currentConfig.globalLinks },
+        { id: 'course_content', data: currentConfig.courseContent },
+        { id: 'practice_tests', data: currentConfig.practiceTests },
+        { id: 'materials', data: currentConfig.materials },
+        { id: 'gemini_keys', data: { keys: currentConfig.geminiKeys } },
+        { id: 'exam_date', data: { date: currentConfig.examDate } }
       ];
 
       for (const config of configs) {
-        const { error } = await supabase.from('site_config').upsert(config, { onConflict: 'id' });
-        if (error) {
-          console.error(`Failed to save ${config.id}:`, error);
-          throw error;
+        const { data, error } = await supabase.from('site_config').update({ data: config.data }).eq('id', config.id).select();
+        if (error || !data || data.length === 0) {
+          // If update fails or row doesn't exist, try insert
+          const { error: insertError } = await supabase.from('site_config').insert(config);
+          if (insertError) {
+            console.error(`Failed to save ${config.id}:`, error, insertError);
+            throw insertError;
+          }
         }
       }
       
@@ -467,16 +492,40 @@ const App: React.FC = () => {
 
   const addReview = async (text: string, rating: number) => {
     if (!currentUser) { navigate('/login'); return; }
-    const { error } = await supabase.from('reviews').insert({
+    
+    const reviewData: any = {
+      user_id: currentUser.id,
       name: currentUser.name,
-      avatar: currentUser.avatar,
       text,
       rating,
       role: 'Nursing Student'
-    });
+    };
+    if (currentUser.avatar) reviewData.avatar = currentUser.avatar;
+
+    const { error } = await supabase.from('reviews').insert(reviewData);
     if (!error) {
       await fetchReviews();
       addNotification("Review Published", "Thank you for sharing your journey!", currentUser.id);
+    } else {
+      console.error("Failed to add review:", error);
+      // Fallback if user_id column doesn't exist
+      if (error.code === '42703' || error.message.includes('column')) {
+        const fallbackData: any = {
+          name: currentUser.name,
+          text,
+          rating,
+          role: 'Nursing Student'
+        };
+        if (currentUser.avatar) fallbackData.avatar = currentUser.avatar;
+        
+        const { error: retryError } = await supabase.from('reviews').insert(fallbackData);
+        if (!retryError) {
+          await fetchReviews();
+          addNotification("Review Published", "Thank you for sharing your journey!", currentUser.id);
+        } else {
+          console.error("Failed to add review on retry:", retryError);
+        }
+      }
     }
   };
 
