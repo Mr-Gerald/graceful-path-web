@@ -72,6 +72,7 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
   const [showCorrections, setShowCorrections] = useState(false);
   const [showPaywall, setShowPaywall] = useState(false);
   const [selectedDifficulty, setSelectedDifficulty] = useState<'all' | 'easy' | 'medium' | 'hard'>('all');
+  const [isTestsLoading, setIsTestsLoading] = useState(true);
 
   // Profile Edit States
   const [editName, setEditName] = useState(user.name);
@@ -98,18 +99,13 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
   ];
 
   useEffect(() => {
-    if (currentView === 'Practice Tests' && !activeTest && practiceTests.length > 0) {
-      // If there's only one test and it's not locked, auto-select it
-      const availableTests = practiceTests.filter(test => {
-        const isLocked = !user.hasPaidLive && (test.difficulty === 'medium' || test.difficulty === 'hard');
-        return !isLocked;
-      });
-      
-      if (availableTests.length === 1) {
-        handleStartTest(availableTests[0]);
-      }
+    if (practiceTests.length > 0 || courseContent.FOUNDATIONS.length > 0) {
+      setIsTestsLoading(false);
     }
-  }, [currentView, practiceTests, user.hasPaidLive]);
+    // Set a timeout to stop loading even if empty
+    const timer = setTimeout(() => setIsTestsLoading(false), 2000);
+    return () => clearTimeout(timer);
+  }, [practiceTests, courseContent]);
 
   const handleStartTest = (test: PracticeTest) => {
     setActiveTest(test);
@@ -605,7 +601,12 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
             )}
 
             <div className="space-y-6">
-              {practiceTests.filter(test => selectedDifficulty === 'all' || test.difficulty === selectedDifficulty).length === 0 ? (
+              {isTestsLoading ? (
+                <div className="bg-white p-20 rounded-[3rem] border border-slate-100 text-center animate-pulse">
+                  <div className="w-12 h-12 bg-slate-100 rounded-full mx-auto mb-4"></div>
+                  <p className="text-slate-400 font-bold italic">Loading Professional Exams...</p>
+                </div>
+              ) : practiceTests.filter(test => selectedDifficulty === 'all' || test.difficulty === selectedDifficulty).length === 0 ? (
                 <div className="bg-white p-20 rounded-[3rem] border border-slate-100 text-center">
                   <p className="text-slate-400 font-bold italic">No exams available for this cohort yet.</p>
                 </div>

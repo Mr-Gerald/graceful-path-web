@@ -180,29 +180,54 @@ const App: React.FC = () => {
   };
 
   const fetchReviews = async () => {
-    // Explicitly select columns we know exist to avoid schema cache issues with '*'
-    // We avoid selecting '*' to prevent issues with non-existent columns like 'avatar'
-    const { data } = await supabase
+    // Attempt to fetch with profiles join first
+    try {
+      const { data, error } = await supabase
+        .from('reviews')
+        .select('id, user_id, text, rating, role, likes, created_at, profiles(name, avatar), review_replies(id, name, text, created_at)')
+        .order('created_at', { ascending: false });
+        
+      if (!error && data) {
+        const formattedReviews: Review[] = data.map(r => ({
+          id: r.id,
+          name: ((r as any).profiles?.[0]?.name || (r as any).profiles?.name) || (r as any).name || 'Nursing Student',
+          avatar: ((r as any).profiles?.[0]?.avatar || (r as any).profiles?.avatar) || (r as any).avatar || '',
+          text: r.text,
+          rating: r.rating,
+          role: r.role,
+          likes: r.likes || 0,
+          replies: (r.review_replies || []).map((rp: any) => ({
+            id: rp.id,
+            name: rp.name,
+            avatar: '',
+            text: rp.text,
+            createdAt: new Date(rp.created_at)
+          })),
+          createdAt: new Date(r.created_at)
+        }));
+        setReviews(formattedReviews);
+        return;
+      }
+    } catch (e) {
+      console.warn("Join fetch failed, falling back to simple fetch:", e);
+    }
+
+    // Fallback: Simple fetch without joins or user_id
+    const { data: fallbackData } = await supabase
       .from('reviews')
-      .select('id, user_id, text, rating, role, likes, created_at, profiles(name, avatar), review_replies(id, name, text, created_at)')
+      .select('*')
       .order('created_at', { ascending: false });
-      
-    if (data) {
-      const formattedReviews: Review[] = data.map(r => ({
+
+    if (fallbackData) {
+      const formattedReviews: Review[] = fallbackData.map(r => ({
         id: r.id,
-        name: ((r as any).profiles?.[0]?.name || (r as any).profiles?.name) || 'Nursing Student',
-        avatar: ((r as any).profiles?.[0]?.avatar || (r as any).profiles?.avatar) || '',
+        name: r.name || 'Nursing Student',
+        avatar: r.avatar || '',
         text: r.text,
         rating: r.rating,
         role: r.role,
         likes: r.likes || 0,
-        replies: (r.review_replies || []).map((rp: any) => ({
-          id: rp.id,
-          name: rp.name,
-          avatar: '', // We don't have avatar in replies yet, or we'd join with profiles there too
-          text: rp.text,
-          createdAt: new Date(rp.created_at)
-        })),
+        replies: [],
         createdAt: new Date(r.created_at)
       }));
       setReviews(formattedReviews);
@@ -507,25 +532,31 @@ const App: React.FC = () => {
   const addReview = async (text: string, rating: number) => {
     if (!currentUser) { navigate('/login'); return false; }
     
-    // We only store the core review data and user_id. 
-    // Name and Avatar are fetched dynamically from the profiles table.
-    const reviewData: any = {
-      user_id: currentUser.id,
-      text,
-      rating,
-      role: 'Nursing Student'
-    };
+    // Attempt to insert with user_id first
+    try {
+      const reviewData: any = {
+        user_id: currentUser.id,
+        text,
+        rating,
+        role: 'Nursing Student'
+      };
 
-    const { error } = await supabase.from('reviews').insert(reviewData);
-    if (!error) {
-      await fetchReviews();
-      addNotification("Review Published", "Thank you for sharing your journey!", currentUser.id);
-      return true;
-    } else {
-      console.error("Failed to add review:", error);
-      // Fallback for older schemas if user_id column doesn't exist
-      if (error.code === '42703' || error.code === 'PGRST204' || error.message.includes('column')) {
-        const fallbackData = { name: currentUser.name, text, rating, role: 'Nursing Student' };
+      const { error } = await supabase.from('reviews').insert(reviewData);
+      if (!error) {
+        await fetchReviews();
+        addNotification("Review Published", "Thank you for sharing your journey!", currentUser.id);
+        return true;
+      }
+      
+      // If user_id is missing, fallback to name/avatar
+      if (error.code === '42703' || error.code === 'PGRST204' || error.message.includes('user_id')) {
+        const fallbackData = { 
+          name: currentUser.name, 
+          avatar: currentUser.avatar || '',
+          text, 
+          rating, 
+          role: 'Nursing Student' 
+        };
         const { error: retryError } = await supabase.from('reviews').insert(fallbackData);
         if (!retryError) {
           await fetchReviews();
@@ -533,8 +564,11 @@ const App: React.FC = () => {
           return true;
         }
       }
-      return false;
+    } catch (e) {
+      console.error("Critical error adding review:", e);
     }
+    
+    return false;
   };
 
   const addNotification = async (title: string, text: string, userId: string | 'ALL') => {
