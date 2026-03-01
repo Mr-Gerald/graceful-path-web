@@ -180,16 +180,17 @@ const App: React.FC = () => {
   };
 
   const fetchReviews = async () => {
+    // Explicitly select columns we know exist to avoid schema cache issues with '*'
     const { data } = await supabase
       .from('reviews')
-      .select('*, profiles(name, avatar), review_replies(*)')
+      .select('id, user_id, text, rating, role, likes, created_at, profiles(name, avatar), review_replies(*)')
       .order('created_at', { ascending: false });
       
     if (data) {
       const formattedReviews: Review[] = data.map(r => ({
         id: r.id,
-        name: r.profiles?.name || r.name,
-        avatar: r.profiles?.avatar || r.avatar,
+        name: ((r as any).profiles?.[0]?.name || (r as any).profiles?.name) || 'Nursing Student',
+        avatar: ((r as any).profiles?.[0]?.avatar || (r as any).profiles?.avatar) || '',
         text: r.text,
         rating: r.rating,
         role: r.role,
@@ -506,14 +507,14 @@ const App: React.FC = () => {
   const addReview = async (text: string, rating: number) => {
     if (!currentUser) { navigate('/login'); return; }
     
+    // We only store the core review data and user_id. 
+    // Name and Avatar are fetched dynamically from the profiles table.
     const reviewData: any = {
       user_id: currentUser.id,
-      name: currentUser.name,
       text,
       rating,
       role: 'Nursing Student'
     };
-    if (currentUser.avatar) reviewData.avatar = currentUser.avatar;
 
     const { error } = await supabase.from('reviews').insert(reviewData);
     if (!error) {
@@ -521,21 +522,13 @@ const App: React.FC = () => {
       addNotification("Review Published", "Thank you for sharing your journey!", currentUser.id);
     } else {
       console.error("Failed to add review:", error);
-      // Fallback if user_id or avatar column doesn't exist
-      if (error.code === '42703' || error.code === 'PGRST204' || error.message.includes('column') || error.message.includes('schema cache')) {
-        const fallbackData: any = {
-          name: currentUser.name,
-          text,
-          rating,
-          role: 'Nursing Student'
-        };
-        
+      // Fallback for older schemas if user_id column doesn't exist
+      if (error.code === '42703' || error.code === 'PGRST204' || error.message.includes('column')) {
+        const fallbackData = { name: currentUser.name, text, rating, role: 'Nursing Student' };
         const { error: retryError } = await supabase.from('reviews').insert(fallbackData);
         if (!retryError) {
           await fetchReviews();
           addNotification("Review Published", "Thank you for sharing your journey!", currentUser.id);
-        } else {
-          console.error("Failed to add review on retry:", retryError);
         }
       }
     }
