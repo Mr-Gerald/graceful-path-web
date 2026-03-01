@@ -180,7 +180,7 @@ const App: React.FC = () => {
   };
 
   const fetchReviews = async () => {
-    // Attempt to fetch with profiles join first
+    // Attempt 1: Full join with profiles and replies
     try {
       const { data, error } = await supabase
         .from('reviews')
@@ -208,30 +208,54 @@ const App: React.FC = () => {
         setReviews(formattedReviews);
         return;
       }
-    } catch (e) {
-      console.warn("Join fetch failed, falling back to simple fetch:", e);
-    }
+    } catch (e) { console.warn("Attempt 1 failed:", e); }
 
-    // Fallback: Simple fetch without joins or user_id
-    const { data: fallbackData } = await supabase
-      .from('reviews')
-      .select('*')
-      .order('created_at', { ascending: false });
+    // Attempt 2: Simple fetch without joins
+    try {
+      const { data, error } = await supabase
+        .from('reviews')
+        .select('*')
+        .order('created_at', { ascending: false });
 
-    if (fallbackData) {
-      const formattedReviews: Review[] = fallbackData.map(r => ({
-        id: r.id,
-        name: r.name || 'Nursing Student',
-        avatar: r.avatar || '',
-        text: r.text,
-        rating: r.rating,
-        role: r.role,
-        likes: r.likes || 0,
-        replies: [],
-        createdAt: new Date(r.created_at)
-      }));
-      setReviews(formattedReviews);
-    }
+      if (!error && data) {
+        const formattedReviews: Review[] = data.map(r => ({
+          id: r.id,
+          name: r.name || 'Nursing Student',
+          avatar: r.avatar || '',
+          text: r.text,
+          rating: r.rating,
+          role: r.role,
+          likes: r.likes || 0,
+          replies: [],
+          createdAt: new Date(r.created_at)
+        }));
+        setReviews(formattedReviews);
+        return;
+      }
+    } catch (e) { console.warn("Attempt 2 failed:", e); }
+
+    // Attempt 3: Minimal fetch
+    try {
+      const { data, error } = await supabase
+        .from('reviews')
+        .select('id, text, rating')
+        .limit(20);
+
+      if (!error && data) {
+        const formattedReviews: Review[] = data.map(r => ({
+          id: r.id,
+          name: 'Nursing Student',
+          avatar: '',
+          text: r.text,
+          rating: r.rating,
+          role: 'Nursing Student',
+          likes: 0,
+          replies: [],
+          createdAt: new Date()
+        }));
+        setReviews(formattedReviews);
+      }
+    } catch (e) { console.error("All fetch attempts failed:", e); }
   };
 
   const handleDeleteReview = async (id: string) => {
@@ -532,41 +556,48 @@ const App: React.FC = () => {
   const addReview = async (text: string, rating: number) => {
     if (!currentUser) { navigate('/login'); return false; }
     
-    // Attempt to insert with user_id first
+    // Attempt 1: Standard insert with user_id
     try {
-      const reviewData: any = {
+      const { error } = await supabase.from('reviews').insert({
         user_id: currentUser.id,
         text,
         rating,
         role: 'Nursing Student'
-      };
+      });
+      if (!error) { await fetchReviews(); return true; }
+    } catch (e) {}
 
-      const { error } = await supabase.from('reviews').insert(reviewData);
-      if (!error) {
-        await fetchReviews();
-        addNotification("Review Published", "Thank you for sharing your journey!", currentUser.id);
-        return true;
-      }
-      
-      // If user_id is missing, fallback to name/avatar
-      if (error.code === '42703' || error.code === 'PGRST204' || error.message.includes('user_id')) {
-        const fallbackData = { 
-          name: currentUser.name, 
-          avatar: currentUser.avatar || '',
-          text, 
-          rating, 
-          role: 'Nursing Student' 
-        };
-        const { error: retryError } = await supabase.from('reviews').insert(fallbackData);
-        if (!retryError) {
-          await fetchReviews();
-          addNotification("Review Published", "Thank you for sharing your journey!", currentUser.id);
-          return true;
-        }
-      }
-    } catch (e) {
-      console.error("Critical error adding review:", e);
-    }
+    // Attempt 2: Fallback to name/avatar (if user_id is missing)
+    try {
+      const { error } = await supabase.from('reviews').insert({
+        name: currentUser.name,
+        avatar: currentUser.avatar || '',
+        text,
+        rating,
+        role: 'Nursing Student'
+      });
+      if (!error) { await fetchReviews(); return true; }
+    } catch (e) {}
+
+    // Attempt 3: Minimal insert (if name/avatar is missing)
+    try {
+      const { error } = await supabase.from('reviews').insert({
+        name: currentUser.name,
+        text,
+        rating,
+        role: 'Nursing Student'
+      });
+      if (!error) { await fetchReviews(); return true; }
+    } catch (e) {}
+
+    // Attempt 4: Absolute minimal insert
+    try {
+      const { error } = await supabase.from('reviews').insert({
+        text,
+        rating
+      });
+      if (!error) { await fetchReviews(); return true; }
+    } catch (e) {}
     
     return false;
   };
