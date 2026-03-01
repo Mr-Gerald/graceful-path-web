@@ -532,7 +532,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
           <div className="bg-white p-10 rounded-[3rem] border border-slate-100 shadow-sm animate-in fade-in duration-500">
              <div className="flex items-center justify-between mb-10">
                <h3 className="text-2xl font-serif font-bold text-slate-900 uppercase">Practice Exam Directory</h3>
-               <button onClick={() => setPracticeTests([...practiceTests, { id: Date.now().toString(), title: 'New Assessment', duration: '60m', questions: [], difficulty: 'medium' }])} className="bg-brand-600 text-white px-8 py-4 rounded-2xl font-black text-xs uppercase tracking-widest shadow-lg shadow-brand-100">Create New Exam</button>
+               <button onClick={() => setPracticeTests([...practiceTests, { id: Date.now().toString(), title: 'New Assessment', duration: '60m', questions: [], difficulty: 'easy' }])} className="bg-brand-600 text-white px-8 py-4 rounded-2xl font-black text-xs uppercase tracking-widest shadow-lg shadow-brand-100">Create New Exam</button>
              </div>
              <div className="space-y-6">
                 {practiceTests.map((t, i) => (
@@ -552,6 +552,19 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                               copy[i] = { ...copy[i], duration: e.target.value };
                               setPracticeTests(copy);
                             }} className="bg-transparent text-[10px] text-slate-400 font-black uppercase tracking-widest w-12 border-b border-slate-200" />
+                            <select 
+                              value={t.difficulty || 'medium'} 
+                              onChange={e => {
+                                const copy = [...practiceTests]; 
+                                copy[i] = { ...copy[i], difficulty: e.target.value as any };
+                                setPracticeTests(copy);
+                              }}
+                              className="bg-transparent text-[10px] text-brand-500 font-black uppercase tracking-widest outline-none border-b border-slate-200"
+                            >
+                              <option value="easy">Easy</option>
+                              <option value="medium">Medium</option>
+                              <option value="hard">Hard</option>
+                            </select>
                          </div>
                        </div>
                      </div>

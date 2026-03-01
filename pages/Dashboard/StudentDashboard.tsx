@@ -147,14 +147,53 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
   const openAsset = (data: string, title: string) => {
     if (!data) return;
 
-    const link = document.createElement('a');
-    link.href = data;
-    link.target = '_blank';
-    link.rel = 'noopener noreferrer'; // Security best practice
-    link.style.display = 'none'; // Hide the link
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    try {
+      if (data.startsWith('data:')) {
+        const arr = data.split(',');
+        const mime = arr[0].match(/:(.*?);/)?.[1] || 'application/octet-stream';
+        const bstr = atob(arr[1]);
+        let n = bstr.length;
+        const u8arr = new Uint8Array(n);
+        while (n--) {
+          u8arr[n] = bstr.charCodeAt(n);
+        }
+        const blob = new Blob([u8arr], { type: mime });
+        const url = URL.createObjectURL(blob);
+        
+        // Use a hidden link for better browser compatibility
+        const link = document.createElement('a');
+        link.href = url;
+        link.target = '_blank';
+        link.rel = 'noopener noreferrer';
+        // For PDFs, we want to view, not download, if possible
+        if (mime !== 'application/pdf') {
+          link.download = title || 'download';
+        }
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        
+        // Revoke after a longer delay to ensure the browser has opened it
+        setTimeout(() => URL.revokeObjectURL(url), 120000);
+      } else {
+        const link = document.createElement('a');
+        link.href = data;
+        link.target = '_blank';
+        link.rel = 'noopener noreferrer';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      }
+    } catch (e) {
+      console.error("Error opening asset:", e);
+      // Ultimate fallback
+      const link = document.createElement('a');
+      link.href = data;
+      link.download = title || 'download';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
   };
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -238,8 +277,8 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
     }
   };
 
-  const handleSubmitReview = () => {
-    addReview(reviewText, rating);
+  const handleSubmitReview = async () => {
+    await addReview(reviewText, rating);
     setReviewSubmitted(true);
     setReviewText('');
   };
@@ -442,7 +481,7 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
                         onClick={() => { setShowPaywall(false); setQuizFinished(true); }}
                         className="flex-1 bg-transparent border-2 border-brand-400 text-white px-8 py-5 rounded-2xl font-black text-xs uppercase tracking-[0.2em] hover:bg-brand-700/50 transition"
                       >
-                        Grade My 15 Questions
+                        See Results of Answered Questions
                       </button>
                     </div>
                   </div>
@@ -773,7 +812,20 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
                         </div>
                       ))}
                     </div>
-                    <button disabled={!isActive} className={`w-full py-5 rounded-2xl font-black text-xs uppercase tracking-[0.2em] transition-all duration-300 ${isActive ? 'bg-brand-600 text-white shadow-lg shadow-brand-200 hover:bg-brand-700' : 'bg-slate-200 text-slate-400'}`}>
+                    <button 
+                      disabled={!isActive} 
+                      onClick={() => {
+                        if (isActive && items.length > 0) {
+                          const firstItem = items[0];
+                          if (firstItem.assetData) {
+                            openAsset(firstItem.assetData, firstItem.title);
+                          } else if (firstItem.contentUrl) {
+                            openAsset(firstItem.contentUrl, firstItem.title);
+                          }
+                        }
+                      }}
+                      className={`w-full py-5 rounded-2xl font-black text-xs uppercase tracking-[0.2em] transition-all duration-300 ${isActive ? 'bg-brand-600 text-white shadow-lg shadow-brand-200 hover:bg-brand-700' : 'bg-slate-200 text-slate-400'}`}
+                    >
                       {isActive ? (user.progress === 0 ? 'Start Module' : 'Continue Module') : 'Locked'}
                     </button>
                   </div>

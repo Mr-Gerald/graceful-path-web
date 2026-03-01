@@ -180,12 +180,16 @@ const App: React.FC = () => {
   };
 
   const fetchReviews = async () => {
-    const { data } = await supabase.from('reviews').select('*, review_replies(*)').order('created_at', { ascending: false });
+    const { data } = await supabase
+      .from('reviews')
+      .select('*, profiles(name, avatar), review_replies(*)')
+      .order('created_at', { ascending: false });
+      
     if (data) {
       const formattedReviews: Review[] = data.map(r => ({
         id: r.id,
-        name: r.name,
-        avatar: r.avatar,
+        name: r.profiles?.name || r.name,
+        avatar: r.profiles?.avatar || r.avatar,
         text: r.text,
         rating: r.rating,
         role: r.role,
