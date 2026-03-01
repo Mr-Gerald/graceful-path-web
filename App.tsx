@@ -292,12 +292,21 @@ const App: React.FC = () => {
       ];
 
       for (const config of configs) {
-        const { data, error } = await supabase.from('site_config').update({ data: config.data }).eq('id', config.id).select();
-        if (error || !data || data.length === 0) {
-          // If update fails or row doesn't exist, try insert
+        // Check if row exists first
+        const { data: existing } = await supabase.from('site_config').select('id').eq('id', config.id).maybeSingle();
+        
+        if (existing) {
+          // Row exists, update it
+          const { error } = await supabase.from('site_config').update({ data: config.data }).eq('id', config.id);
+          if (error) {
+            console.error(`Failed to update ${config.id}:`, error);
+            throw error;
+          }
+        } else {
+          // Row does not exist, insert it
           const { error: insertError } = await supabase.from('site_config').insert(config);
           if (insertError) {
-            console.error(`Failed to save ${config.id}:`, error, insertError);
+            console.error(`Failed to insert ${config.id}:`, insertError);
             throw insertError;
           }
         }
@@ -508,15 +517,14 @@ const App: React.FC = () => {
       addNotification("Review Published", "Thank you for sharing your journey!", currentUser.id);
     } else {
       console.error("Failed to add review:", error);
-      // Fallback if user_id column doesn't exist
-      if (error.code === '42703' || error.message.includes('column')) {
+      // Fallback if user_id or avatar column doesn't exist
+      if (error.code === '42703' || error.code === 'PGRST204' || error.message.includes('column') || error.message.includes('schema cache')) {
         const fallbackData: any = {
           name: currentUser.name,
           text,
           rating,
           role: 'Nursing Student'
         };
-        if (currentUser.avatar) fallbackData.avatar = currentUser.avatar;
         
         const { error: retryError } = await supabase.from('reviews').insert(fallbackData);
         if (!retryError) {
@@ -543,6 +551,15 @@ const App: React.FC = () => {
     }
   };
 
+  const handleUnapprovePayment = async (userId: string) => {
+    const { error } = await supabase.from('profiles').update({ has_paid_live: false }).eq('id', userId);
+    if (!error) {
+      if (currentUser?.id === userId) setCurrentUser({ ...currentUser, hasPaidLive: false });
+      addNotification("Access Revoked", "Your premium academy access has been revoked.", userId);
+      fetchAllStudents();
+    }
+  };
+
   const handleApproveUser = async (userId: string) => {
     const { error } = await supabase.from('profiles').update({ is_approved: true }).eq('id', userId);
     if (!error) {
@@ -552,10 +569,20 @@ const App: React.FC = () => {
     }
   };
 
+  const handleUnapproveUser = async (userId: string) => {
+    const { error } = await supabase.from('profiles').update({ is_approved: false }).eq('id', userId);
+    if (!error) {
+      if (currentUser?.id === userId) setCurrentUser({ ...currentUser, isApproved: false });
+      addNotification("Account Unapproved", "Your account access has been revoked.", userId);
+      fetchAllStudents();
+    }
+  };
+
   useEffect(() => {
     const handleHashChange = () => {
       const hash = window.location.hash.replace('#', '') || '/';
       setCurrentPath(hash);
+      setError(''); // Clear error on navigation
       window.scrollTo({ top: 0, behavior: 'smooth' });
     };
     window.addEventListener('hashchange', handleHashChange);
@@ -565,6 +592,7 @@ const App: React.FC = () => {
   const navigate = (path: string) => {
     window.location.hash = path;
     setCurrentPath(path);
+    setError(''); // Clear error on navigation
   };
 
   if (isLoading) {
@@ -624,7 +652,9 @@ const App: React.FC = () => {
             users={allStudents} 
             onDeleteUser={async (id) => { await supabase.from('profiles').delete().eq('id', id); fetchAllStudents(); }} 
             onApprovePayment={handleApprovePayment} 
+            onUnapprovePayment={handleUnapprovePayment}
             onApproveUser={handleApproveUser} 
+            onUnapproveUser={handleUnapproveUser}
             onSendNotification={addNotification} 
             courseContent={courseContent} 
             setCourseContent={setCourseContent} 
