@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { 
   LayoutDashboard, BookOpen, Video, FileText, Calendar, Award, BarChart3, ChevronRight, 
   PlayCircle, Clock, ChevronLeft, Sparkles, ExternalLink, LogOut, Bell, CheckCircle2, 
@@ -13,7 +13,7 @@ import { COUNTRY_LIST } from '../../constants';
 interface StudentDashboardProps {
   user: User;
   onLogout: () => void;
-  addReview: (text: string, rating: number) => void;
+  addReview: (text: string, rating: number) => Promise<boolean>;
   notifications: any[];
   onDeleteNotification: (id: string) => void;
   courseContent: any;
@@ -96,6 +96,20 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
     { label: 'Calendar', icon: <Calendar className="w-5 h-5" /> },
     { label: 'Certificates', icon: <Award className="w-5 h-5" /> },
   ];
+
+  useEffect(() => {
+    if (currentView === 'Practice Tests' && !activeTest && practiceTests.length > 0) {
+      // If there's only one test and it's not locked, auto-select it
+      const availableTests = practiceTests.filter(test => {
+        const isLocked = !user.hasPaidLive && (test.difficulty === 'medium' || test.difficulty === 'hard');
+        return !isLocked;
+      });
+      
+      if (availableTests.length === 1) {
+        handleStartTest(availableTests[0]);
+      }
+    }
+  }, [currentView, practiceTests, user.hasPaidLive]);
 
   const handleStartTest = (test: PracticeTest) => {
     setActiveTest(test);
@@ -278,9 +292,13 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
   };
 
   const handleSubmitReview = async () => {
-    await addReview(reviewText, rating);
-    setReviewSubmitted(true);
-    setReviewText('');
+    const success = await addReview(reviewText, rating);
+    if (success) {
+      setReviewSubmitted(true);
+      setReviewText('');
+    } else {
+      alert("Failed to submit review. Please try again.");
+    }
   };
 
   const handleContactAdminPayment = (platform: 'whatsapp' | 'telegram') => {

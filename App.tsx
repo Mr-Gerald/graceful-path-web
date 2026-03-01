@@ -181,9 +181,10 @@ const App: React.FC = () => {
 
   const fetchReviews = async () => {
     // Explicitly select columns we know exist to avoid schema cache issues with '*'
+    // We avoid selecting '*' to prevent issues with non-existent columns like 'avatar'
     const { data } = await supabase
       .from('reviews')
-      .select('id, user_id, text, rating, role, likes, created_at, profiles(name, avatar), review_replies(*)')
+      .select('id, user_id, text, rating, role, likes, created_at, profiles(name, avatar), review_replies(id, name, text, created_at)')
       .order('created_at', { ascending: false });
       
     if (data) {
@@ -194,11 +195,11 @@ const App: React.FC = () => {
         text: r.text,
         rating: r.rating,
         role: r.role,
-        likes: r.likes,
+        likes: r.likes || 0,
         replies: (r.review_replies || []).map((rp: any) => ({
           id: rp.id,
           name: rp.name,
-          avatar: rp.avatar,
+          avatar: '', // We don't have avatar in replies yet, or we'd join with profiles there too
           text: rp.text,
           createdAt: new Date(rp.created_at)
         })),
@@ -494,7 +495,6 @@ const App: React.FC = () => {
     const { error } = await supabase.from('review_replies').insert({
       review_id: id,
       name: currentUser.name,
-      avatar: currentUser.avatar,
       text: taggedText
     });
 
@@ -505,7 +505,7 @@ const App: React.FC = () => {
   };
 
   const addReview = async (text: string, rating: number) => {
-    if (!currentUser) { navigate('/login'); return; }
+    if (!currentUser) { navigate('/login'); return false; }
     
     // We only store the core review data and user_id. 
     // Name and Avatar are fetched dynamically from the profiles table.
@@ -520,6 +520,7 @@ const App: React.FC = () => {
     if (!error) {
       await fetchReviews();
       addNotification("Review Published", "Thank you for sharing your journey!", currentUser.id);
+      return true;
     } else {
       console.error("Failed to add review:", error);
       // Fallback for older schemas if user_id column doesn't exist
@@ -529,8 +530,10 @@ const App: React.FC = () => {
         if (!retryError) {
           await fetchReviews();
           addNotification("Review Published", "Thank you for sharing your journey!", currentUser.id);
+          return true;
         }
       }
+      return false;
     }
   };
 

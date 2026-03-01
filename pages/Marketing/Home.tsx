@@ -43,7 +43,7 @@ interface HomeProps {
   branding: BrandingAssets;
   onLike: (id: string) => void;
   onReply: (id: string, text: string) => void;
-  onAddReview: (text: string, rating: number) => void;
+  onAddReview: (text: string, rating: number) => Promise<boolean>;
   userLikes: string[];
   currentUser: User | null;
 }
@@ -125,10 +125,14 @@ export const Home: React.FC<HomeProps> = ({ onNavigate, reviews, links, branding
     }
   };
 
-  const handleSubmitReview = () => {
-    onAddReview(reviewText, rating);
-    setReviewSubmitted(true);
-    setReviewText('');
+  const handleSubmitReview = async () => {
+    const success = await onAddReview(reviewText, rating);
+    if (success) {
+      setReviewSubmitted(true);
+      setReviewText('');
+    } else {
+      alert("Failed to submit review. Please try again.");
+    }
   };
 
   const intensiveCourse = COURSES.find(c => c.id === 'intensive-nclex');
