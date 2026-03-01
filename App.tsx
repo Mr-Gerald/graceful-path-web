@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Layout } from './components/Layout';
 import { Home } from './pages/Marketing/Home';
 import { StudentDashboard } from './pages/Dashboard/StudentDashboard';
-import { AdminPanel } from './pages/Admin/AdminPanel';
+import { AdminDashboard } from './pages/Admin/AdminDashboard';
 import { AIChatbot } from './components/AIChatbot';
 import { UserRole, User, Review, BrandingAssets } from './types';
 import { COURSES, COUNTRY_LIST } from './constants';
@@ -645,7 +645,7 @@ const App: React.FC = () => {
         ) : <Home onNavigate={navigate} reviews={reviews} links={globalLinks} branding={brandingAssets} onLike={handleLikeReview} onReply={handleReplyReview} onAddReview={addReview} userLikes={userLikes} currentUser={currentUser} />;
       case '/admin':
         return currentUser?.role === UserRole.ADMIN ? (
-          <AdminPanel 
+          <AdminDashboard 
             reviews={reviews} 
             onDeleteReview={handleDeleteReview} 
             onLogout={handleLogout} 

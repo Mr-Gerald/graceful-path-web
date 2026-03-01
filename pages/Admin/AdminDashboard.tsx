@@ -9,12 +9,14 @@ import { Logo } from '../../components/Layout';
 import { supabase } from '../../services/supabaseClient';
 import { geminiService } from '../../services/geminiService';
 
-interface AdminPanelProps {
+interface AdminDashboardProps {
   onLogout: () => void;
   users: any[];
   onDeleteUser: (id: string) => void;
   onApprovePayment: (id: string) => void;
   onApproveUser: (id: string) => void;
+  onUnapprovePayment: (id: string) => void;
+  onUnapproveUser: (id: string) => void;
   onSendNotification: (title: string, text: string, userId: string | 'ALL') => void;
   courseContent: any;
   setCourseContent: any;
@@ -72,8 +74,8 @@ const FileUploadButton: React.FC<{
   );
 };
 
-export const AdminPanel: React.FC<AdminPanelProps> = ({ 
-  onLogout, users, onDeleteUser, onApprovePayment, onApproveUser, onSendNotification, 
+export const AdminDashboard: React.FC<AdminDashboardProps> = ({ 
+  onLogout, users, onDeleteUser, onApprovePayment, onApproveUser, onUnapprovePayment, onUnapproveUser, onSendNotification, 
   courseContent, setCourseContent, practiceTests, setPracticeTests, 
   materials, setMaterials, globalLinks, setGlobalLinks, branding, setBranding, examDate, setExamDate,
 
@@ -275,12 +277,18 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                         <td className="px-8 py-5">
                           <div className="flex flex-col gap-2">
                             {u.is_approved ? (
-                              <span className="px-3 py-1 bg-green-50 text-green-600 text-[10px] font-black uppercase tracking-widest rounded-full border border-green-100 text-center">Approved</span>
+                              <button onClick={() => onUnapproveUser(u.id)} className="px-3 py-1 bg-green-50 text-green-600 text-[10px] font-black uppercase tracking-widest rounded-full border border-green-100 hover:bg-red-50 hover:text-red-600 hover:border-red-100 transition text-center group">
+                                <span className="group-hover:hidden">Approved</span>
+                                <span className="hidden group-hover:inline">Revoke Access</span>
+                              </button>
                             ) : (
                               <button onClick={() => onApproveUser(u.id)} className="px-3 py-1 bg-brand-600 text-white text-[10px] font-black uppercase tracking-widest rounded-full border border-brand-600 hover:bg-brand-700 transition">Approve User</button>
                             )}
                             {u.has_paid_live ? (
-                              <span className="px-3 py-1 bg-green-50 text-green-600 text-[10px] font-black uppercase tracking-widest rounded-full border border-green-100 text-center">Premium Access</span>
+                              <button onClick={() => onUnapprovePayment(u.id)} className="px-3 py-1 bg-green-50 text-green-600 text-[10px] font-black uppercase tracking-widest rounded-full border border-green-100 hover:bg-red-50 hover:text-red-600 hover:border-red-100 transition text-center group">
+                                <span className="group-hover:hidden">Premium Access</span>
+                                <span className="hidden group-hover:inline">Revoke Premium</span>
+                              </button>
                             ) : (
                               <button onClick={() => onApprovePayment(u.id)} className="px-3 py-1 bg-brand-50 text-brand-600 text-[10px] font-black uppercase tracking-widest rounded-full border border-brand-100 hover:bg-brand-600 hover:text-white transition">Approve Premium</button>
                             )}
