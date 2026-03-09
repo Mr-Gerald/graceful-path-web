@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import confetti from 'canvas-confetti';
 import { 
   LayoutDashboard, BookOpen, Video, FileText, Calendar, Award, BarChart3, ChevronRight, 
   PlayCircle, Clock, ChevronLeft, Sparkles, ExternalLink, LogOut, Bell, CheckCircle2, 
@@ -50,6 +51,19 @@ const ComingSoon = ({ title }: { title: string }) => (
   </div>
 );
 
+const NCLEX_INSIGHTS = [
+  "Assess the patient first, never the equipment. Safety is your top NCLEX priority.",
+  "When in doubt, choose the answer that keeps the patient safe and stable.",
+  "Maslow's Hierarchy: Physiological needs (Airway, Breathing, Circulation) always come first.",
+  "ADPIE: Assessment is the first step of the nursing process. Don't jump to intervention.",
+  "Acute vs. Chronic: Always prioritize the patient with an acute condition over a stable chronic one.",
+  "Expected vs. Unexpected: Focus on findings that are NOT typical for the patient's diagnosis.",
+  "Therapeutic Communication: Avoid 'Why' questions and focus on the patient's feelings.",
+  "Delegation: Don't delegate what you can EAT (Evaluate, Assess, Teach).",
+  "Infection Control: Standard precautions apply to all patients, regardless of diagnosis.",
+  "Pharmacology: Always check for allergies and verify the 6 rights of medication administration."
+];
+
 export const StudentDashboard: React.FC<StudentDashboardProps> = ({ 
   user, onLogout, addReview, notifications, onDeleteNotification, 
   courseContent, practiceTests, materials, links, examDate, onUpdateProfile
@@ -63,6 +77,8 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
   const [reviewText, setReviewText] = useState('');
   const [rating, setRating] = useState(5);
   const [zoomedAvatar, setZoomedAvatar] = useState<string | null>(null);
+  const [earnedBadge, setEarnedBadge] = useState<string | null>(null);
+  const [showCertificate, setShowCertificate] = useState<boolean>(false);
 
   // Quiz State
   const [activeTest, setActiveTest] = useState<PracticeTest | null>(null);
@@ -134,8 +150,37 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
     if (currentQuestionIndex < activeTest.questions.length - 1) {
       setCurrentQuestionIndex(currentQuestionIndex + 1);
     } else {
+      const score = calculateScore();
+      if (score >= 85) {
+        handleBadgeEarned(activeTest.difficulty || 'easy');
+      }
       setQuizFinished(true);
     }
+  };
+
+  const handleBadgeEarned = (difficulty: string) => {
+    const badgeName = difficulty.charAt(0).toUpperCase() + difficulty.slice(1) + " Mastery Badge";
+    setEarnedBadge(badgeName);
+    
+    // Realistic confetti popper effect
+    const duration = 5 * 1000;
+    const animationEnd = Date.now() + duration;
+    const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 0 };
+
+    const randomInRange = (min: number, max: number) => Math.random() * (max - min) + min;
+
+    const interval: any = setInterval(function() {
+      const timeLeft = animationEnd - Date.now();
+
+      if (timeLeft <= 0) {
+        return clearInterval(interval);
+      }
+
+      const particleCount = 50 * (timeLeft / duration);
+      // since particles fall down, start a bit higher than random
+      confetti({ ...defaults, particleCount, origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 } });
+      confetti({ ...defaults, particleCount, origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 } });
+    }, 250);
   };
 
   const handleUpgradeToPremium = () => {
@@ -381,7 +426,73 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
   const renderView = () => {
     switch (currentView) {
       case 'Calendar': return <ComingSoon title="Study Calendar" />;
-      case 'Certificates': return <ComingSoon title="Certificates Hub" />;
+      case 'Certificates': 
+        return (
+          <div className="animate-in fade-in duration-500">
+            <div className="text-center mb-12">
+              <h2 className="text-4xl font-serif font-bold text-slate-900 mb-4">Your Professional Achievements</h2>
+              <p className="text-lg text-slate-500 font-medium">Official recognition of your clinical mastery.</p>
+            </div>
+            
+            <div className="max-w-4xl mx-auto">
+              {user.hasCertificate ? (
+                <div className="bg-white p-12 rounded-[3rem] border border-gray-100 shadow-2xl relative overflow-hidden group">
+                  <div className="absolute inset-0 bg-brand-50/30 opacity-0 group-hover:opacity-100 transition-opacity duration-700"></div>
+                  <div className="relative z-10 border-8 border-brand-100 p-12 rounded-[2rem] text-center">
+                    <div className="flex justify-between items-start mb-12">
+                      <Logo className="h-12" />
+                      <div className="text-right">
+                        <p className="text-[10px] font-black text-brand-600 uppercase tracking-widest">Certificate ID</p>
+                        <p className="text-xs font-bold text-slate-400">GP-{user.id.slice(0,8).toUpperCase()}</p>
+                      </div>
+                    </div>
+                    
+                    <div className="mb-16">
+                      <h3 className="text-5xl font-serif font-bold text-slate-900 mb-8">Certificate of Mastery</h3>
+                      <p className="text-xl text-slate-500 font-medium mb-12">This is to certify that</p>
+                      <h4 className="text-6xl font-serif font-bold text-brand-600 mb-12 border-b-2 border-brand-100 inline-block px-8 pb-4">{user.name}</h4>
+                      <p className="text-xl text-slate-500 font-medium leading-relaxed max-w-2xl mx-auto">
+                        Has successfully completed the comprehensive NCLEX Mastery Program at Graceful Path Global Health Academy, 
+                        demonstrating exceptional clinical reasoning and professional nursing competence.
+                      </p>
+                    </div>
+                    
+                    <div className="flex justify-between items-end">
+                      <div className="text-left">
+                        <div className="w-48 h-px bg-slate-300 mb-4"></div>
+                        <p className="text-sm font-bold text-slate-900">Academy Director</p>
+                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Graceful Path Global Health</p>
+                      </div>
+                      <div className="bg-brand-50 p-6 rounded-2xl border border-brand-100">
+                        <ShieldCheck className="w-16 h-16 text-brand-500" />
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <button 
+                    onClick={() => window.print()}
+                    className="mt-12 w-full py-5 bg-slate-900 text-white font-black text-sm uppercase tracking-widest rounded-2xl hover:bg-brand-600 transition shadow-xl flex items-center justify-center group"
+                  >
+                    <Download className="w-5 h-5 mr-3 group-hover:animate-bounce" /> Download Official Certificate
+                  </button>
+                </div>
+              ) : (
+                <div className="bg-white p-16 rounded-[3rem] border border-gray-100 shadow-sm text-center">
+                  <div className="bg-slate-50 w-24 h-24 rounded-[2rem] flex items-center justify-center mx-auto mb-8 text-slate-300">
+                    <Award className="w-12 h-12" />
+                  </div>
+                  <h3 className="text-3xl font-serif font-bold text-slate-900 mb-4">Certificate Pending</h3>
+                  <p className="text-lg text-slate-500 mb-10 max-w-md mx-auto font-medium leading-relaxed">
+                    Your official certificate is issued manually by the Academy Admin after a final review of your mastery badges and progress.
+                  </p>
+                  <div className="inline-flex items-center px-6 py-3 bg-brand-50 text-brand-600 rounded-full text-xs font-black uppercase tracking-widest">
+                    <Clock className="w-4 h-4 mr-2" /> Under Review
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        );
       case 'Practice Tests':
         if (activeTest) {
           if (quizFinished) {
@@ -968,7 +1079,9 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
                 <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-4">Daily Insight</p>
                 <div className="flex items-start">
                   <Zap className="w-6 h-6 text-yellow-500 mr-4 flex-shrink-0" />
-                  <p className="text-lg text-slate-700 font-serif font-bold italic leading-relaxed">"Assess the patient first, never the equipment. Safety is your top NCLEX priority."</p>
+                  <p className="text-lg text-slate-700 font-serif font-bold italic leading-relaxed">
+                    "{NCLEX_INSIGHTS[new Date().getDate() % NCLEX_INSIGHTS.length]}"
+                  </p>
                 </div>
               </div>
               <div className="bg-slate-900 p-10 rounded-[3rem] text-white shadow-lg">
@@ -1082,6 +1195,35 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
                 <button onClick={() => { setIsReviewModalOpen(false); setReviewSubmitted(false); }} className="w-full py-5 bg-slate-900 text-white font-black text-sm uppercase tracking-[0.2em] rounded-2xl">Back to Dashboard</button>
               </div>
             )}
+          </div>
+        </div>
+      )}
+      {/* Badge Earned Modal */}
+      {earnedBadge && (
+        <div className="fixed inset-0 z-[300] bg-slate-900/80 backdrop-blur-xl flex items-center justify-center p-4">
+          <div className="bg-white w-full max-w-lg rounded-[3.5rem] p-12 text-center shadow-2xl animate-in zoom-in duration-500 relative overflow-hidden">
+            <div className="absolute inset-0 bg-gradient-to-b from-brand-50/50 to-transparent"></div>
+            <div className="relative z-10">
+              <div className="w-32 h-32 bg-brand-600 text-white rounded-[2.5rem] flex items-center justify-center mx-auto mb-10 shadow-2xl shadow-brand-200 animate-bounce">
+                <Award className="w-16 h-16" />
+              </div>
+              <p className="text-brand-600 font-black uppercase tracking-[0.4em] text-[10px] mb-4">New Achievement Unlocked</p>
+              <h2 className="text-4xl font-serif font-bold text-slate-900 mb-4 leading-tight">Hurry! Congratulations!</h2>
+              <p className="text-xl text-slate-500 mb-10 font-medium leading-relaxed">
+                You've just earned the <span className="text-brand-600 font-bold">{earnedBadge}</span> for your exceptional performance!
+              </p>
+              <div className="bg-slate-50 p-6 rounded-2xl border border-slate-100 mb-10">
+                <p className="text-sm text-slate-600 font-bold italic leading-relaxed">
+                  "Your dedication to clinical excellence is inspiring. Keep pushing towards your global nursing goals!"
+                </p>
+              </div>
+              <button 
+                onClick={() => setEarnedBadge(null)}
+                className="w-full py-5 bg-slate-900 text-white font-black text-sm uppercase tracking-widest rounded-2xl hover:bg-brand-600 transition shadow-xl"
+              >
+                Continue My Journey
+              </button>
+            </div>
           </div>
         </div>
       )}

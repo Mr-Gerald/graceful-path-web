@@ -1,7 +1,6 @@
-
 {
   "name": "Graceful Path Global Health",
-  "description": "The ultimate clinical preparation platform for nursing professionals. Graceful Path Global Health provides simplified, structured NCLEX preparation for first-time and repeat test takers.",
+  "description": "The ultimate clinical preparation platform for nursing professionals. Graceful Path Global Health provides simplified NCLEX preparation, AI-powered tutoring, professional mastery badges, and official certificates for global nursing licensure.",
   "requestFramePermissions": [
     "camera",
     "microphone"

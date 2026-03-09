@@ -17,6 +17,8 @@ interface AdminDashboardProps {
   onApproveUser: (id: string) => void;
   onUnapprovePayment: (id: string) => void;
   onUnapproveUser: (id: string) => void;
+  onApproveCertificate: (id: string) => void;
+  onRevokeCertificate: (id: string) => void;
   onSendNotification: (title: string, text: string, userId: string | 'ALL') => void;
   courseContent: any;
   setCourseContent: any;
@@ -75,7 +77,8 @@ const FileUploadButton: React.FC<{
 };
 
 export const AdminDashboard: React.FC<AdminDashboardProps> = ({ 
-  onLogout, users, onDeleteUser, onApprovePayment, onApproveUser, onUnapprovePayment, onUnapproveUser, onSendNotification, 
+  onLogout, users, onDeleteUser, onApprovePayment, onApproveUser, onUnapprovePayment, onUnapproveUser, 
+  onApproveCertificate, onRevokeCertificate, onSendNotification, 
   courseContent, setCourseContent, practiceTests, setPracticeTests, 
   materials, setMaterials, globalLinks, setGlobalLinks, branding, setBranding, examDate, setExamDate,
 
@@ -291,6 +294,14 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                               </button>
                             ) : (
                               <button onClick={() => onApprovePayment(u.id)} className="px-3 py-1 bg-brand-50 text-brand-600 text-[10px] font-black uppercase tracking-widest rounded-full border border-brand-100 hover:bg-brand-600 hover:text-white transition">Approve Premium</button>
+                            )}
+                            {u.has_certificate ? (
+                              <button onClick={() => onRevokeCertificate(u.id)} className="px-3 py-1 bg-brand-600 text-white text-[10px] font-black uppercase tracking-widest rounded-full border border-brand-600 hover:bg-red-600 transition text-center group">
+                                <span className="group-hover:hidden">Certificate Issued</span>
+                                <span className="hidden group-hover:inline">Revoke Certificate</span>
+                              </button>
+                            ) : (
+                              <button onClick={() => onApproveCertificate(u.id)} className="px-3 py-1 bg-white text-slate-400 text-[10px] font-black uppercase tracking-widest rounded-full border border-slate-200 hover:bg-brand-600 hover:text-white hover:border-brand-600 transition">Issue Certificate</button>
                             )}
                           </div>
                         </td>

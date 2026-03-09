@@ -7,7 +7,8 @@ import { AIChatbot } from './components/AIChatbot';
 import { UserRole, User, Review, BrandingAssets } from './types';
 import { COURSES, COUNTRY_LIST } from './constants';
 import { supabase } from './services/supabaseClient';
-import { Mail, CheckCircle2, Globe } from 'lucide-react';
+import { geminiService } from './services/geminiService';
+import { Mail, CheckCircle2, Globe, LogOut } from 'lucide-react';
 
 const App: React.FC = () => {
   const [currentPath, setCurrentPath] = useState<string>(window.location.hash.replace('#', '') || '/');
@@ -35,6 +36,7 @@ const App: React.FC = () => {
   const [isVerifying, setIsVerifying] = useState(false);
   const [isResending, setIsResending] = useState(false);
   const [resendSuccess, setResendSuccess] = useState(false);
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
 
   const [examDate, setExamDate] = useState('April 25, 2026');
   const [brandingAssets, setBrandingAssets] = useState<BrandingAssets>({
@@ -162,6 +164,8 @@ const App: React.FC = () => {
         avatar: data.avatar,
         hasPaidLive: data.has_paid_live,
         isApproved: data.is_approved,
+        hasCertificate: data.has_certificate,
+        badges: data.badges,
         enrolledDate: data.enrolled_date
       };
       setCurrentUser(user);
@@ -303,7 +307,11 @@ const App: React.FC = () => {
           if (course) setCourseContent(course);
           if (tests) setPracticeTests(tests);
           if (mats) setMaterials(mats);
-          if (keys) setGeminiKeys(keys.keys || []);
+          if (keys) {
+            const kList = keys.keys || [];
+            setGeminiKeys(kList);
+            geminiService.setKeys(kList);
+          }
         }
         setHasLoadedInitialData(true);
       });
@@ -517,6 +525,7 @@ const App: React.FC = () => {
     setCurrentUser(null);
     setAllStudents([]);
     setError('');
+    setShowLogoutConfirm(false);
     navigate('/');
   };
 
@@ -643,6 +652,24 @@ const App: React.FC = () => {
     }
   };
 
+  const handleApproveCertificate = async (userId: string) => {
+    const { error } = await supabase.from('profiles').update({ has_certificate: true }).eq('id', userId);
+    if (!error) {
+      if (currentUser?.id === userId) setCurrentUser({ ...currentUser, hasCertificate: true });
+      addNotification("Certificate Issued!", "Your official NCLEX Mastery Certificate is now available in your dashboard.", userId);
+      fetchAllStudents();
+    }
+  };
+
+  const handleRevokeCertificate = async (userId: string) => {
+    const { error } = await supabase.from('profiles').update({ has_certificate: false }).eq('id', userId);
+    if (!error) {
+      if (currentUser?.id === userId) setCurrentUser({ ...currentUser, hasCertificate: false });
+      addNotification("Certificate Revoked", "Your certificate has been revoked for review.", userId);
+      fetchAllStudents();
+    }
+  };
+
   useEffect(() => {
     const handleHashChange = () => {
       const hash = window.location.hash.replace('#', '') || '/';
@@ -706,20 +733,22 @@ const App: React.FC = () => {
         return <Home onNavigate={navigate} reviews={reviews} links={globalLinks} branding={brandingAssets} onLike={handleLikeReview} onReply={handleReplyReview} onAddReview={addReview} userLikes={userLikes} currentUser={currentUser} />;
       case '/dashboard':
         return currentUser ? (
-          <StudentDashboard user={currentUser} onLogout={handleLogout} addReview={addReview} notifications={notifications.filter(n => n.user_id === 'ALL' || n.user_id === currentUser.id)} onDeleteNotification={async (id) => { await supabase.from('notifications').delete().eq('id', id); fetchNotifications(); }} courseContent={courseContent} practiceTests={practiceTests} materials={materials} links={globalLinks} examDate={examDate} onUpdateProfile={() => fetchUserProfile(currentUser.id)} />
+          <StudentDashboard user={currentUser} onLogout={() => setShowLogoutConfirm(true)} addReview={addReview} notifications={notifications.filter(n => n.user_id === 'ALL' || n.user_id === currentUser.id)} onDeleteNotification={async (id) => { await supabase.from('notifications').delete().eq('id', id); fetchNotifications(); }} courseContent={courseContent} practiceTests={practiceTests} materials={materials} links={globalLinks} examDate={examDate} onUpdateProfile={() => fetchUserProfile(currentUser.id)} />
         ) : <Home onNavigate={navigate} reviews={reviews} links={globalLinks} branding={brandingAssets} onLike={handleLikeReview} onReply={handleReplyReview} onAddReview={addReview} userLikes={userLikes} currentUser={currentUser} />;
       case '/admin':
         return currentUser?.role === UserRole.ADMIN ? (
           <AdminDashboard 
             reviews={reviews} 
             onDeleteReview={handleDeleteReview} 
-            onLogout={handleLogout} 
+            onLogout={() => setShowLogoutConfirm(true)} 
             users={allStudents} 
             onDeleteUser={async (id) => { await supabase.from('profiles').delete().eq('id', id); fetchAllStudents(); }} 
             onApprovePayment={handleApprovePayment} 
             onUnapprovePayment={handleUnapprovePayment}
             onApproveUser={handleApproveUser} 
             onUnapproveUser={handleUnapproveUser}
+            onApproveCertificate={handleApproveCertificate}
+            onRevokeCertificate={handleRevokeCertificate}
             onSendNotification={addNotification} 
             courseContent={courseContent} 
             setCourseContent={setCourseContent} 
@@ -905,6 +934,33 @@ const App: React.FC = () => {
     <Layout userRole={currentUser?.role} onNavigate={navigate} currentPath={currentPath} links={globalLinks}>
       {renderContent()}
       <AIChatbot />
+      
+      {/* Logout Confirmation Modal */}
+      {showLogoutConfirm && (
+        <div className="fixed inset-0 z-[300] bg-slate-900/60 backdrop-blur-md flex items-center justify-center p-4">
+          <div className="bg-white w-full max-w-md rounded-[2.5rem] p-10 text-center shadow-2xl animate-in zoom-in duration-300">
+            <div className="bg-red-50 w-20 h-20 rounded-[2rem] flex items-center justify-center mx-auto mb-8 shadow-sm">
+              <LogOut className="w-10 h-10 text-red-500" />
+            </div>
+            <h2 className="text-3xl font-serif font-bold text-slate-900 mb-2">Confirm Logout</h2>
+            <p className="text-lg text-slate-500 mb-10 font-medium">Are you sure you want to leave the Academy Hub?</p>
+            <div className="grid grid-cols-2 gap-4">
+              <button 
+                onClick={() => setShowLogoutConfirm(false)}
+                className="py-4 bg-slate-100 text-slate-600 font-black text-xs uppercase tracking-widest rounded-2xl hover:bg-slate-200 transition"
+              >
+                No, Stay
+              </button>
+              <button 
+                onClick={handleLogout}
+                className="py-4 bg-red-600 text-white font-black text-xs uppercase tracking-widest rounded-2xl hover:bg-red-700 transition shadow-xl shadow-red-100"
+              >
+                Yes, Logout
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </Layout>
   );
 };

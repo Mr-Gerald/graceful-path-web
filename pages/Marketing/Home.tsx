@@ -411,8 +411,8 @@ export const Home: React.FC<HomeProps> = ({ onNavigate, reviews, links, branding
 
               <div className="flex items-center space-x-12">
                 <div className="text-center">
-                  <p className="text-4xl font-black text-brand-600">500+</p>
-                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Lives Impacted</p>
+                  <p className="text-4xl font-black text-brand-600">1,000+</p>
+                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Global Nurses Empowered</p>
                 </div>
                 <div className="h-10 w-px bg-slate-200"></div>
                 <div className="text-center">

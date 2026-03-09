@@ -4,7 +4,10 @@ import { supabase } from '../services/supabaseClient';
 
 // Use multiple possible environment variables for the API key to ensure compatibility
 // Use multiple possible environment variables for the API key to ensure compatibility
+let cachedKeys: string[] = [];
+
 const getKeys = async () => {
+  if (cachedKeys.length > 0) return cachedKeys;
   const { data, error } = await supabase.from('api_keys').select('key_value').eq('is_active', true);
   if (error) {
     console.error('Error fetching API keys from Supabase:', error);
@@ -48,6 +51,9 @@ const callWithKeyRotation = async (fn: (ai: GoogleGenAI) => Promise<any>, onProg
 };
 
 export const geminiService = {
+  setKeys(keys: string[]) {
+    cachedKeys = keys;
+  },
   /**
    * General chatbot for clinical nursing queries.
    */

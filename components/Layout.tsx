@@ -3,8 +3,8 @@ import { Menu, X, User as UserIcon, LogIn, PhoneCall, MessageCircle, LogOut, Glo
 import { NAV_LINKS } from '../constants';
 import { UserRole } from '../types';
 
-export const Logo = () => (
-  <div className="flex flex-col items-center justify-center cursor-pointer group scale-95 md:scale-100" onClick={() => window.location.hash = '/'}>
+export const Logo = ({ className }: { className?: string }) => (
+  <div className={`flex flex-col items-center justify-center cursor-pointer group scale-95 md:scale-100 ${className || ''}`} onClick={() => window.location.hash = '/'}>
     <img 
       src="https://scontent.flos3-2.fna.fbcdn.net/v/t1.15752-9/627752552_2511858222545536_1185950041510102102_n.jpg?_nc_cat=106&ccb=1-7&_nc_sid=0024fc&_nc_ohc=rk8yn6_f2v4Q7kNvwF5_Nqr&_nc_oc=Adl-JvHCIA6urfsCJTKkNhn2cRm0JSHeovALL736y7iSpLkzhfFykX4NY9d-WG48JUA&_nc_ad=z-m&_nc_cid=1361&_nc_zt=23&_nc_ht=scontent.flos3-2.fna&oh=03_Q7cD4gG0Us99OppOz9pI2XVOozOxqTYN-fxMUMIKY_igRSWB3g&oe=69B740BC" 
       alt="Graceful Path Logo" 

@@ -19,6 +19,8 @@ export interface User {
   enrolledDate?: string;
   hasPaidLive?: boolean;
   isApproved?: boolean;
+  hasCertificate?: boolean;
+  badges?: string[];
 }
 
 export interface Course {
