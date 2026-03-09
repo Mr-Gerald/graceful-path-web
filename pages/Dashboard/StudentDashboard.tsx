@@ -185,7 +185,7 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
 
   const handleUpgradeToPremium = () => {
     const msg = encodeURIComponent(`Hello Admin, I just completed the free trial and I'm ready to upgrade my Graceful Path account to Premium to unlock all practice tests!`);
-    window.open(`https://wa.me/message/WW3VSMB2DHYUF1?text=${msg}`, '_blank');
+    window.open(`https://wa.me/447470539081?text=${msg}`, '_blank');
   };
 
   const calculateScore = () => {
@@ -345,7 +345,7 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
   const handleContactAdminPayment = (platform: 'whatsapp' | 'telegram') => {
     const msg = encodeURIComponent(`Hi Admin, I'm ${user.name} and I want to inquire about the enrollment fee to unlock Live Classes in the Graceful Path dashboard.`);
     const url = platform === 'whatsapp' 
-      ? `https://wa.me/message/WW3VSMB2DHYUF1?text=${msg}`
+      ? `https://wa.me/447470539081?text=${msg}`
       : `https://t.me/+r0sIS5RfnuFhYmFk?text=${msg}`;
     window.open(url, '_blank');
   };

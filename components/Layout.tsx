@@ -34,7 +34,7 @@ export const Layout: React.FC<LayoutProps> = ({ children, userRole = UserRole.GU
 
   const handleNavClick = (path: string, isExternal?: boolean) => {
     if (isExternal) {
-      window.open(links?.whatsapp || 'https://wa.me/message/WW3VSMB2DHYUF1', '_blank');
+      window.open(links?.whatsapp || 'https://wa.me/447470539081', '_blank');
       return;
     }
     

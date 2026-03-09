@@ -225,7 +225,7 @@ export const Home: React.FC<HomeProps> = ({ onNavigate, reviews, links, branding
           title="Connect With Us"
           onClose={() => setShowChatOptions(false)}
           options={[
-            { label: 'WhatsApp Messenger', link: links?.whatsapp || 'https://wa.me/message/WW3VSMB2DHYUF1', icon: <MessageCircle className="w-5 h-5" />, color: 'bg-green-500' },
+            { label: 'WhatsApp Messenger', link: links?.whatsapp || 'https://wa.me/447470539081', icon: <MessageCircle className="w-5 h-5" />, color: 'bg-green-500' },
             { label: 'Telegram Hub', link: links?.telegram || 'https://t.me/+r0sIS5RfnuFhYmFk', icon: <Globe className="w-5 h-5" />, color: 'bg-[#0ea5e9]' }
           ]}
         />
@@ -411,8 +411,8 @@ export const Home: React.FC<HomeProps> = ({ onNavigate, reviews, links, branding
 
               <div className="flex items-center space-x-12">
                 <div className="text-center">
-                  <p className="text-4xl font-black text-brand-600">1,000+</p>
-                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Global Nurses Empowered</p>
+                  <p className="text-3xl font-black text-brand-600 uppercase tracking-tighter">Dedicated</p>
+                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Support</p>
                 </div>
                 <div className="h-10 w-px bg-slate-200"></div>
                 <div className="text-center">

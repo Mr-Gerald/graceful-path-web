@@ -48,7 +48,7 @@ const App: React.FC = () => {
   });
 
   const [globalLinks, setGlobalLinks] = useState({
-    whatsapp: 'https://wa.me/message/WW3VSMB2DHYUF1',
+    whatsapp: 'https://wa.me/447470539081',
     telegram: 'https://t.me/+r0sIS5RfnuFhYmFk',
     phone: '+44 7470 539081',
     liveSessionZoom: '#',
