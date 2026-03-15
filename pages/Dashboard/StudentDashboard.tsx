@@ -175,6 +175,8 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
         const { error } = await supabase.from('profiles').update({ badges: newBadges }).eq('id', user.id);
         if (!error) {
           onUpdateProfile();
+        } else {
+          console.error("Failed to save badge to database:", error);
         }
       }
     } catch (err) {

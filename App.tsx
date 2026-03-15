@@ -622,6 +622,9 @@ const App: React.FC = () => {
       if (currentUser?.id === userId) setCurrentUser({ ...currentUser, hasPaidLive: true });
       addNotification("Access Unlocked!", "Your premium academy content is now ready.", userId);
       await fetchAllStudents();
+    } else {
+      console.error("Failed to approve payment:", error);
+      setError("Failed to approve payment. Please check database permissions.");
     }
   };
 
@@ -631,6 +634,9 @@ const App: React.FC = () => {
       if (currentUser?.id === userId) setCurrentUser({ ...currentUser, hasPaidLive: false });
       addNotification("Access Revoked", "Your premium academy access has been revoked.", userId);
       await fetchAllStudents();
+    } else {
+      console.error("Failed to revoke payment:", error);
+      setError("Failed to revoke payment. Please check database permissions.");
     }
   };
 
@@ -640,6 +646,9 @@ const App: React.FC = () => {
       if (currentUser?.id === userId) setCurrentUser({ ...currentUser, isApproved: true });
       addNotification("Account Approved!", "You now have full access to Materials and Courses.", userId);
       await fetchAllStudents();
+    } else {
+      console.error("Failed to approve user:", error);
+      setError("Failed to approve user. Please check database permissions.");
     }
   };
 
@@ -649,6 +658,9 @@ const App: React.FC = () => {
       if (currentUser?.id === userId) setCurrentUser({ ...currentUser, isApproved: false });
       addNotification("Account Unapproved", "Your account access has been revoked.", userId);
       await fetchAllStudents();
+    } else {
+      console.error("Failed to unapprove user:", error);
+      setError("Failed to unapprove user. Please check database permissions.");
     }
   };
 
@@ -658,6 +670,9 @@ const App: React.FC = () => {
       if (currentUser?.id === userId) setCurrentUser({ ...currentUser, hasCertificate: true });
       addNotification("Certificate Issued!", "Your official NCLEX Mastery Certificate is now available in your dashboard.", userId);
       await fetchAllStudents();
+    } else {
+      console.error("Failed to approve certificate:", error);
+      setError("Failed to issue certificate. Please check database permissions.");
     }
   };
 
@@ -667,6 +682,9 @@ const App: React.FC = () => {
       if (currentUser?.id === userId) setCurrentUser({ ...currentUser, hasCertificate: false });
       addNotification("Certificate Revoked", "Your certificate has been revoked for review.", userId);
       await fetchAllStudents();
+    } else {
+      console.error("Failed to revoke certificate:", error);
+      setError("Failed to revoke certificate. Please check database permissions.");
     }
   };
 
