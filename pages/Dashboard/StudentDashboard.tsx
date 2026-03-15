@@ -498,35 +498,35 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
                       <div className="absolute bottom-0 left-0 w-12 h-12 md:w-32 md:h-32 border-b-2 md:border-b-8 border-l-2 md:border-l-8 border-brand-200 m-1 md:m-8 rounded-bl-lg md:rounded-bl-3xl"></div>
                       <div className="absolute bottom-0 right-0 w-12 h-12 md:w-32 md:h-32 border-b-2 md:border-b-8 border-r-2 md:border-r-8 border-brand-200 m-1 md:m-8 rounded-br-lg md:rounded-br-3xl"></div>
 
-                      <div className="relative z-10 border md:border-4 border-brand-100 p-2 md:p-12 rounded-md md:rounded-[1.5rem] text-center h-full flex flex-col justify-between overflow-hidden">
-                        <div className="flex justify-between items-start mb-1 md:mb-0">
-                          <div className="transform scale-[0.4] md:scale-100 origin-top-left -ml-2 md:ml-0">
+                      <div className="relative z-10 border md:border-4 border-brand-100 p-3 md:p-12 rounded-md md:rounded-[1.5rem] text-center h-full flex flex-col justify-between">
+                        <div className="flex justify-between items-start">
+                          <div className="transform scale-[0.6] md:scale-100 origin-top-left -ml-3 md:ml-0">
                             <Logo />
                           </div>
                           <div className="text-right">
-                            <p className="text-[5px] md:text-[10px] font-black text-brand-600 uppercase tracking-widest">Certificate ID</p>
-                            <p className="text-[6px] md:text-xs font-bold text-slate-400">GP-{user.id.slice(0,8).toUpperCase()}</p>
+                            <p className="text-[7px] md:text-[10px] font-black text-brand-600 uppercase tracking-widest">Certificate ID</p>
+                            <p className="text-[8px] md:text-xs font-bold text-slate-400">GP-{user.id.slice(0,8).toUpperCase()}</p>
                           </div>
                         </div>
                         
-                        <div className="py-0 md:py-4">
-                          <h3 className="text-sm md:text-6xl font-serif font-bold text-slate-900 mb-0.5 md:mb-6 leading-tight">Certificate of Mastery</h3>
-                          <p className="text-[7px] md:text-2xl text-slate-500 font-medium mb-0.5 md:mb-8">This is to certify that</p>
-                          <h4 className="text-xs md:text-7xl font-serif font-bold text-brand-600 mb-0.5 md:mb-8 border-b md:border-b-4 border-brand-100 inline-block px-2 md:px-12 pb-0.5 md:pb-4">{user.name}</h4>
-                          <p className="text-[6px] md:text-xl text-slate-500 font-medium leading-relaxed max-w-3xl mx-auto px-2 md:px-4">
+                        <div className="flex-grow flex flex-col justify-center py-2 md:py-8">
+                          <h3 className="text-base md:text-6xl font-serif font-bold text-slate-900 mb-1 md:mb-6 leading-tight">Certificate of Mastery</h3>
+                          <p className="text-[9px] md:text-2xl text-slate-500 font-medium mb-1 md:mb-8">This is to certify that</p>
+                          <h4 className="text-sm md:text-7xl font-serif font-bold text-brand-600 mb-1 md:mb-8 border-b md:border-b-4 border-brand-100 inline-block px-3 md:px-12 pb-1 md:pb-4">{user.name}</h4>
+                          <p className="text-[8px] md:text-xl text-slate-500 font-medium leading-relaxed max-w-3xl mx-auto px-2 md:px-4">
                             Has successfully completed the comprehensive NCLEX Mastery Program at Graceful Path Global Health Academy, 
                             demonstrating exceptional clinical reasoning and professional nursing competence.
                           </p>
                         </div>
                         
-                        <div className="flex justify-between items-end mt-1 md:mt-0">
+                        <div className="flex justify-between items-end">
                           <div className="text-left">
-                            <div className="w-10 md:w-64 h-px bg-slate-300 mb-0.5 md:mb-4"></div>
-                            <p className="text-[6px] md:text-lg font-bold text-slate-900">Academy Director</p>
-                            <p className="text-[5px] md:text-[12px] font-black text-slate-400 uppercase tracking-widest">Graceful Path Global Health</p>
+                            <div className="w-12 md:w-64 h-px bg-slate-300 mb-1 md:mb-4"></div>
+                            <p className="text-[8px] md:text-lg font-bold text-slate-900">Academy Director</p>
+                            <p className="text-[7px] md:text-[12px] font-black text-slate-400 uppercase tracking-widest">Graceful Path Global Health</p>
                           </div>
-                          <div className="bg-brand-50 p-0.5 md:p-6 rounded md:rounded-2xl border border-brand-100 flex items-center justify-center">
-                            <ShieldCheck className="w-3 h-3 md:w-20 md:h-20 text-brand-500" />
+                          <div className="bg-brand-50 p-1 md:p-6 rounded md:rounded-2xl border border-brand-100 flex items-center justify-center">
+                            <ShieldCheck className="w-4 h-4 md:w-20 md:h-20 text-brand-500" />
                           </div>
                         </div>
                       </div>
