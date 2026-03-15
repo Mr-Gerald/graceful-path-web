@@ -13,6 +13,8 @@
     "@google/genai": "^1.40.0",
     "@supabase/supabase-js": "^2.48.1",
     "canvas-confetti": "^1.9.4",
+    "html2canvas": "^1.4.1",
+    "@types/html2canvas": "^1.0.0",
     "lucide-react": "^0.463.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"

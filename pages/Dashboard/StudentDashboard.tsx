@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import confetti from 'canvas-confetti';
+// @ts-ignore
 import html2canvas from 'html2canvas';
 import { 
   LayoutDashboard, BookOpen, Video, FileText, Calendar, Award, BarChart3, ChevronRight, 
