@@ -484,53 +484,53 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
               <p className="text-lg text-slate-500 font-medium">Official recognition of your clinical mastery.</p>
             </div>
             
-            <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pb-24">
               {user.hasCertificate ? (
-                <div className="space-y-8">
-                    <div 
-                      ref={certificateRef}
-                      className="bg-white p-2 md:p-12 rounded-[1rem] md:rounded-[2rem] border border-gray-100 shadow-2xl relative overflow-hidden aspect-[1.414/1] flex flex-col justify-center min-h-[250px] md:min-h-[600px]"
-                    >
-                      <div className="absolute inset-0 bg-brand-50/10"></div>
-                      {/* Decorative Corner Elements */}
-                      <div className="absolute top-0 left-0 w-12 h-12 md:w-32 md:h-32 border-t-2 md:border-t-8 border-l-2 md:border-l-8 border-brand-200 m-1 md:m-8 rounded-tl-lg md:rounded-tl-3xl"></div>
-                      <div className="absolute top-0 right-0 w-12 h-12 md:w-32 md:h-32 border-t-2 md:border-t-8 border-r-2 md:border-r-8 border-brand-200 m-1 md:m-8 rounded-tr-lg md:rounded-tr-3xl"></div>
-                      <div className="absolute bottom-0 left-0 w-12 h-12 md:w-32 md:h-32 border-b-2 md:border-b-8 border-l-2 md:border-l-8 border-brand-200 m-1 md:m-8 rounded-bl-lg md:rounded-bl-3xl"></div>
-                      <div className="absolute bottom-0 right-0 w-12 h-12 md:w-32 md:h-32 border-b-2 md:border-b-8 border-r-2 md:border-r-8 border-brand-200 m-1 md:m-8 rounded-br-lg md:rounded-br-3xl"></div>
+                <div className="space-y-12">
+                  <div 
+                    ref={certificateRef}
+                    className="bg-white p-4 md:p-10 rounded-[1.5rem] md:rounded-[2.5rem] border border-gray-100 shadow-2xl relative flex flex-col justify-center w-full mx-auto overflow-visible"
+                  >
+                    <div className="absolute inset-0 bg-brand-50/10 rounded-[1.5rem] md:rounded-[2.5rem]"></div>
+                    {/* Decorative Corner Elements */}
+                    <div className="absolute top-0 left-0 w-12 h-12 md:w-32 md:h-32 border-t-4 md:border-t-8 border-l-4 md:border-l-8 border-brand-200 m-2 md:m-8 rounded-tl-xl md:rounded-tl-[2rem]"></div>
+                    <div className="absolute top-0 right-0 w-12 h-12 md:w-32 md:h-32 border-t-4 md:border-t-8 border-r-4 md:border-r-8 border-brand-200 m-2 md:m-8 rounded-tr-xl md:rounded-tr-[2rem]"></div>
+                    <div className="absolute bottom-0 left-0 w-12 h-12 md:w-32 md:h-32 border-b-4 md:border-b-8 border-l-4 md:border-l-8 border-brand-200 m-2 md:m-8 rounded-bl-xl md:rounded-bl-[2rem]"></div>
+                    <div className="absolute bottom-0 right-0 w-12 h-12 md:w-32 md:h-32 border-b-4 md:border-b-8 border-r-4 md:border-r-8 border-brand-200 m-2 md:m-8 rounded-br-xl md:rounded-br-[2rem]"></div>
 
-                      <div className="relative z-10 border md:border-4 border-brand-100 p-3 md:p-12 rounded-md md:rounded-[1.5rem] text-center h-full flex flex-col justify-between">
-                        <div className="flex justify-between items-start">
-                          <div className="transform scale-[0.6] md:scale-100 origin-top-left -ml-3 md:ml-0">
-                            <Logo />
-                          </div>
-                          <div className="text-right">
-                            <p className="text-[7px] md:text-[10px] font-black text-brand-600 uppercase tracking-widest">Certificate ID</p>
-                            <p className="text-[8px] md:text-xs font-bold text-slate-400">GP-{user.id.slice(0,8).toUpperCase()}</p>
-                          </div>
+                    <div className="relative z-10 border-2 md:border-[4px] border-brand-100 p-4 md:p-12 rounded-xl md:rounded-[2rem] text-center flex flex-col justify-between min-h-[350px] md:min-h-[600px]">
+                      <div className="flex justify-between items-start mb-6 md:mb-10">
+                        <div className="transform scale-75 md:scale-110 origin-top-left">
+                          <Logo />
                         </div>
-                        
-                        <div className="flex-grow flex flex-col justify-center py-2 md:py-8">
-                          <h3 className="text-base md:text-6xl font-serif font-bold text-slate-900 mb-1 md:mb-6 leading-tight">Certificate of Mastery</h3>
-                          <p className="text-[9px] md:text-2xl text-slate-500 font-medium mb-1 md:mb-8">This is to certify that</p>
-                          <h4 className="text-sm md:text-7xl font-serif font-bold text-brand-600 mb-1 md:mb-8 border-b md:border-b-4 border-brand-100 inline-block px-3 md:px-12 pb-1 md:pb-4">{user.name}</h4>
-                          <p className="text-[8px] md:text-xl text-slate-500 font-medium leading-relaxed max-w-3xl mx-auto px-2 md:px-4">
-                            Has successfully completed the comprehensive NCLEX Mastery Program at Graceful Path Global Health Academy, 
-                            demonstrating exceptional clinical reasoning and professional nursing competence.
-                          </p>
+                        <div className="text-right">
+                          <p className="text-[7px] md:text-xs font-black text-brand-600 uppercase tracking-widest">Certificate ID</p>
+                          <p className="text-[9px] md:text-sm font-bold text-slate-400">GP-{user.id.slice(0,8).toUpperCase()}</p>
                         </div>
-                        
-                        <div className="flex justify-between items-end">
-                          <div className="text-left">
-                            <div className="w-12 md:w-64 h-px bg-slate-300 mb-1 md:mb-4"></div>
-                            <p className="text-[8px] md:text-lg font-bold text-slate-900">Academy Director</p>
-                            <p className="text-[7px] md:text-[12px] font-black text-slate-400 uppercase tracking-widest">Graceful Path Global Health</p>
-                          </div>
-                          <div className="bg-brand-50 p-1 md:p-6 rounded md:rounded-2xl border border-brand-100 flex items-center justify-center">
-                            <ShieldCheck className="w-4 h-4 md:w-20 md:h-20 text-brand-500" />
-                          </div>
+                      </div>
+                      
+                      <div className="py-2 md:py-6">
+                        <h3 className="text-xl md:text-6xl font-serif font-bold text-slate-900 mb-1 md:mb-6 leading-tight">Certificate of Mastery</h3>
+                        <p className="text-[10px] md:text-2xl text-slate-500 font-medium mb-1 md:mb-8">This is to certify that</p>
+                        <h4 className="text-lg md:text-7xl font-serif font-bold text-brand-600 mb-2 md:mb-10 border-b-2 md:border-b-4 border-brand-100 inline-block px-4 md:px-16 pb-1 md:pb-4">{user.name}</h4>
+                        <p className="text-[9px] md:text-xl text-slate-500 font-medium leading-relaxed max-w-3xl mx-auto px-2 md:px-4">
+                          Has successfully completed the comprehensive NCLEX Mastery Program at Graceful Path Global Health Academy, 
+                          demonstrating exceptional clinical reasoning and professional nursing competence.
+                        </p>
+                      </div>
+                      
+                      <div className="flex justify-between items-end mt-6 md:mt-12">
+                        <div className="text-left">
+                          <div className="w-20 md:w-64 h-px bg-slate-300 mb-1 md:mb-4"></div>
+                          <p className="text-[10px] md:text-xl font-bold text-slate-900">Academy Director</p>
+                          <p className="text-[7px] md:text-xs font-black text-slate-400 uppercase tracking-widest">Graceful Path Global Health</p>
+                        </div>
+                        <div className="bg-brand-50 p-1.5 md:p-6 rounded-lg md:rounded-2xl border border-brand-100 flex items-center justify-center shadow-inner">
+                          <ShieldCheck className="w-5 h-5 md:w-16 md:h-16 text-brand-500" />
                         </div>
                       </div>
                     </div>
+                  </div>
                   
                   <div className="flex flex-col sm:flex-row gap-4">
                     <button 
