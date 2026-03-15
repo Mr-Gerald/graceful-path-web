@@ -457,44 +457,44 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
               <p className="text-lg text-slate-500 font-medium">Official recognition of your clinical mastery.</p>
             </div>
             
-            <div className="max-w-4xl mx-auto">
+            <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
               {user.hasCertificate ? (
-                <div className="bg-white p-12 rounded-[3rem] border border-gray-100 shadow-2xl relative overflow-hidden group">
+                <div className="bg-white p-6 md:p-12 rounded-[2rem] md:rounded-[3rem] border border-gray-100 shadow-2xl relative overflow-hidden group">
                   <div className="absolute inset-0 bg-brand-50/30 opacity-0 group-hover:opacity-100 transition-opacity duration-700"></div>
-                  <div className="relative z-10 border-8 border-brand-100 p-12 rounded-[2rem] text-center">
-                    <div className="flex justify-between items-start mb-12">
-                      <Logo className="h-12" />
-                      <div className="text-right">
+                  <div className="relative z-10 border-4 md:border-8 border-brand-100 p-6 md:p-12 rounded-[1.5rem] md:rounded-[2rem] text-center">
+                    <div className="flex flex-col md:flex-row justify-between items-center md:items-start gap-6 mb-8 md:mb-12">
+                      <Logo className="h-10 md:h-12" />
+                      <div className="text-center md:text-right">
                         <p className="text-[10px] font-black text-brand-600 uppercase tracking-widest">Certificate ID</p>
                         <p className="text-xs font-bold text-slate-400">GP-{user.id.slice(0,8).toUpperCase()}</p>
                       </div>
                     </div>
                     
-                    <div className="mb-16">
-                      <h3 className="text-5xl font-serif font-bold text-slate-900 mb-8">Certificate of Mastery</h3>
-                      <p className="text-xl text-slate-500 font-medium mb-12">This is to certify that</p>
-                      <h4 className="text-6xl font-serif font-bold text-brand-600 mb-12 border-b-2 border-brand-100 inline-block px-8 pb-4">{user.name}</h4>
-                      <p className="text-xl text-slate-500 font-medium leading-relaxed max-w-2xl mx-auto">
+                    <div className="mb-10 md:mb-16">
+                      <h3 className="text-3xl md:text-5xl font-serif font-bold text-slate-900 mb-6 md:mb-8">Certificate of Mastery</h3>
+                      <p className="text-lg md:text-xl text-slate-500 font-medium mb-8 md:mb-12">This is to certify that</p>
+                      <h4 className="text-4xl md:text-6xl font-serif font-bold text-brand-600 mb-8 md:mb-12 border-b-2 border-brand-100 inline-block px-4 md:px-8 pb-4">{user.name}</h4>
+                      <p className="text-base md:text-xl text-slate-500 font-medium leading-relaxed max-w-2xl mx-auto">
                         Has successfully completed the comprehensive NCLEX Mastery Program at Graceful Path Global Health Academy, 
                         demonstrating exceptional clinical reasoning and professional nursing competence.
                       </p>
                     </div>
                     
-                    <div className="flex justify-between items-end">
-                      <div className="text-left">
-                        <div className="w-48 h-px bg-slate-300 mb-4"></div>
+                    <div className="flex flex-col md:flex-row justify-between items-center md:items-end gap-8">
+                      <div className="text-center md:text-left">
+                        <div className="w-48 h-px bg-slate-300 mb-4 mx-auto md:mx-0"></div>
                         <p className="text-sm font-bold text-slate-900">Academy Director</p>
                         <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Graceful Path Global Health</p>
                       </div>
-                      <div className="bg-brand-50 p-6 rounded-2xl border border-brand-100">
-                        <ShieldCheck className="w-16 h-16 text-brand-500" />
+                      <div className="bg-brand-50 p-4 md:p-6 rounded-2xl border border-brand-100">
+                        <ShieldCheck className="w-12 h-12 md:w-16 md:h-16 text-brand-500" />
                       </div>
                     </div>
                   </div>
                   
                   <button 
                     onClick={() => window.print()}
-                    className="mt-12 w-full py-5 bg-slate-900 text-white font-black text-sm uppercase tracking-widest rounded-2xl hover:bg-brand-600 transition shadow-xl flex items-center justify-center group"
+                    className="mt-8 md:mt-12 w-full py-4 md:py-5 bg-slate-900 text-white font-black text-sm uppercase tracking-widest rounded-2xl hover:bg-brand-600 transition shadow-xl flex items-center justify-center group"
                   >
                     <Download className="w-5 h-5 mr-3 group-hover:animate-bounce" /> Download Official Certificate
                   </button>
