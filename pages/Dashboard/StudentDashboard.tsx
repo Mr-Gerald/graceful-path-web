@@ -10,6 +10,7 @@ import {
 } from 'lucide-react';
 import { User, PracticeTest, QuizQuestion } from '../../types';
 import { Logo } from '../../components/Layout';
+import StudyCalendar from '../../components/StudyCalendar';
 import { supabase } from '../../services/supabaseClient';
 import { COUNTRY_LIST } from '../../constants';
 
@@ -475,7 +476,7 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
 
   const renderView = () => {
     switch (currentView) {
-      case 'Calendar': return <ComingSoon title="Study Calendar" />;
+      case 'Calendar': return <StudyCalendar />;
       case 'Certificates': 
         return (
           <div className="animate-in fade-in duration-500">
