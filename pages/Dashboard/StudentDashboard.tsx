@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import confetti from 'canvas-confetti';
+import html2canvas from 'html2canvas';
 import { 
   LayoutDashboard, BookOpen, Video, FileText, Calendar, Award, BarChart3, ChevronRight, 
   PlayCircle, Clock, ChevronLeft, Sparkles, ExternalLink, LogOut, Bell, CheckCircle2, 
@@ -79,6 +80,8 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
   const [zoomedAvatar, setZoomedAvatar] = useState<string | null>(null);
   const [earnedBadge, setEarnedBadge] = useState<string | null>(null);
   const [showCertificate, setShowCertificate] = useState<boolean>(false);
+  const [isDownloading, setIsDownloading] = useState<boolean>(false);
+  const certificateRef = useRef<HTMLDivElement>(null);
 
   // Quiz State
   const [activeTest, setActiveTest] = useState<PracticeTest | null>(null);
@@ -202,6 +205,29 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
       confetti({ ...defaults, particleCount, origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 } });
       confetti({ ...defaults, particleCount, origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 } });
     }, 250);
+  };
+
+  const downloadCertificate = async () => {
+    if (!certificateRef.current) return;
+    setIsDownloading(true);
+    try {
+      const canvas = await html2canvas(certificateRef.current, {
+        scale: 2, // Higher quality
+        useCORS: true,
+        backgroundColor: '#ffffff',
+        logging: false
+      });
+      const image = canvas.toDataURL("image/png", 1.0);
+      const link = document.createElement('a');
+      link.download = `NCLEX-Mastery-Certificate-${user.name.replace(/\s+/g, '-')}.png`;
+      link.href = image;
+      link.click();
+    } catch (err) {
+      console.error("Download failed:", err);
+      alert("Failed to download certificate. Please try again or use the Print option.");
+    } finally {
+      setIsDownloading(false);
+    }
   };
 
   const handleUpgradeToPremium = () => {
@@ -457,47 +483,75 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
               <p className="text-lg text-slate-500 font-medium">Official recognition of your clinical mastery.</p>
             </div>
             
-            <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
               {user.hasCertificate ? (
-                <div className="bg-white p-4 md:p-12 rounded-[2rem] md:rounded-[3rem] border border-gray-100 shadow-2xl relative overflow-hidden group">
-                  <div className="absolute inset-0 bg-brand-50/30 opacity-0 group-hover:opacity-100 transition-opacity duration-700"></div>
-                  <div className="relative z-10 border-2 md:border-8 border-brand-100 p-4 md:p-12 rounded-[1.5rem] md:rounded-[2rem] text-center">
-                    <div className="flex flex-col md:flex-row justify-between items-center md:items-start gap-4 md:gap-6 mb-4 md:mb-12">
-                      <Logo className="h-8 md:h-12" />
-                      <div className="text-center md:text-right">
-                        <p className="text-[8px] md:text-[10px] font-black text-brand-600 uppercase tracking-widest">Certificate ID</p>
-                        <p className="text-[10px] md:text-xs font-bold text-slate-400">GP-{user.id.slice(0,8).toUpperCase()}</p>
+                <div className="space-y-8">
+                  <div 
+                    ref={certificateRef}
+                    className="bg-white p-4 md:p-12 rounded-[1rem] md:rounded-[2rem] border border-gray-100 shadow-2xl relative overflow-hidden aspect-[1.414/1] flex flex-col justify-center"
+                  >
+                    <div className="absolute inset-0 bg-brand-50/10"></div>
+                    {/* Decorative Corner Elements */}
+                    <div className="absolute top-0 left-0 w-16 h-16 md:w-32 md:h-32 border-t-4 md:border-t-8 border-l-4 md:border-l-8 border-brand-200 m-2 md:m-8 rounded-tl-xl md:rounded-tl-3xl"></div>
+                    <div className="absolute top-0 right-0 w-16 h-16 md:w-32 md:h-32 border-t-4 md:border-t-8 border-r-4 md:border-r-8 border-brand-200 m-2 md:m-8 rounded-tr-xl md:rounded-tr-3xl"></div>
+                    <div className="absolute bottom-0 left-0 w-16 h-16 md:w-32 md:h-32 border-b-4 md:border-b-8 border-l-4 md:border-l-8 border-brand-200 m-2 md:m-8 rounded-bl-xl md:rounded-bl-3xl"></div>
+                    <div className="absolute bottom-0 right-0 w-16 h-16 md:w-32 md:h-32 border-b-4 md:border-b-8 border-r-4 md:border-r-8 border-brand-200 m-2 md:m-8 rounded-br-xl md:rounded-br-3xl"></div>
+
+                    <div className="relative z-10 border md:border-4 border-brand-100 p-3 md:p-12 rounded-lg md:rounded-[1.5rem] text-center h-full flex flex-col justify-between">
+                      <div className="flex justify-between items-start">
+                        <Logo className="h-6 md:h-16" />
+                        <div className="text-right">
+                          <p className="text-[6px] md:text-[10px] font-black text-brand-600 uppercase tracking-widest">Certificate ID</p>
+                          <p className="text-[8px] md:text-xs font-bold text-slate-400">GP-{user.id.slice(0,8).toUpperCase()}</p>
+                        </div>
                       </div>
-                    </div>
-                    
-                    <div className="mb-6 md:mb-16">
-                      <h3 className="text-2xl md:text-5xl font-serif font-bold text-slate-900 mb-2 md:mb-8">Certificate of Mastery</h3>
-                      <p className="text-sm md:text-xl text-slate-500 font-medium mb-4 md:mb-12">This is to certify that</p>
-                      <h4 className="text-3xl md:text-6xl font-serif font-bold text-brand-600 mb-4 md:mb-12 border-b-2 border-brand-100 inline-block px-4 md:px-8 pb-2 md:pb-4">{user.name}</h4>
-                      <p className="text-xs md:text-xl text-slate-500 font-medium leading-relaxed max-w-2xl mx-auto">
-                        Has successfully completed the comprehensive NCLEX Mastery Program at Graceful Path Global Health Academy, 
-                        demonstrating exceptional clinical reasoning and professional nursing competence.
-                      </p>
-                    </div>
-                    
-                    <div className="flex flex-col md:flex-row justify-between items-center md:items-end gap-4 md:gap-8">
-                      <div className="text-center md:text-left">
-                        <div className="w-32 md:w-48 h-px bg-slate-300 mb-2 md:mb-4 mx-auto md:mx-0"></div>
-                        <p className="text-xs md:text-sm font-bold text-slate-900">Academy Director</p>
-                        <p className="text-[8px] md:text-[10px] font-black text-slate-400 uppercase tracking-widest">Graceful Path Global Health</p>
+                      
+                      <div className="py-1 md:py-0">
+                        <h3 className="text-lg md:text-6xl font-serif font-bold text-slate-900 mb-1 md:mb-6 leading-tight">Certificate of Mastery</h3>
+                        <p className="text-[10px] md:text-2xl text-slate-500 font-medium mb-1 md:mb-8">This is to certify that</p>
+                        <h4 className="text-xl md:text-7xl font-serif font-bold text-brand-600 mb-1 md:mb-8 border-b-2 md:border-b-4 border-brand-100 inline-block px-4 md:px-12 pb-1 md:pb-4">{user.name}</h4>
+                        <p className="text-[8px] md:text-xl text-slate-500 font-medium leading-relaxed max-w-3xl mx-auto px-4">
+                          Has successfully completed the comprehensive NCLEX Mastery Program at Graceful Path Global Health Academy, 
+                          demonstrating exceptional clinical reasoning and professional nursing competence.
+                        </p>
                       </div>
-                      <div className="bg-brand-50 p-3 md:p-6 rounded-xl md:rounded-2xl border border-brand-100">
-                        <ShieldCheck className="w-8 h-8 md:w-16 md:h-16 text-brand-500" />
+                      
+                      <div className="flex justify-between items-end">
+                        <div className="text-left">
+                          <div className="w-16 md:w-64 h-px bg-slate-300 mb-1 md:mb-4"></div>
+                          <p className="text-[8px] md:text-lg font-bold text-slate-900">Academy Director</p>
+                          <p className="text-[6px] md:text-[12px] font-black text-slate-400 uppercase tracking-widest">Graceful Path Global Health</p>
+                        </div>
+                        <div className="bg-brand-50 p-1 md:p-6 rounded-md md:rounded-2xl border border-brand-100">
+                          <ShieldCheck className="w-4 h-4 md:w-20 md:h-20 text-brand-500" />
+                        </div>
                       </div>
                     </div>
                   </div>
                   
-                  <button 
-                    onClick={() => window.print()}
-                    className="mt-4 md:mt-12 w-full py-3 md:py-5 bg-slate-900 text-white font-black text-[10px] md:text-sm uppercase tracking-widest rounded-xl md:rounded-2xl hover:bg-brand-600 transition shadow-xl flex items-center justify-center group"
-                  >
-                    <Download className="w-4 h-4 md:w-5 md:h-5 mr-3 group-hover:animate-bounce" /> Download Official Certificate
-                  </button>
+                  <div className="flex flex-col sm:flex-row gap-4">
+                    <button 
+                      onClick={downloadCertificate}
+                      disabled={isDownloading}
+                      className="flex-1 py-4 md:py-6 bg-brand-600 text-white font-black text-xs md:text-sm uppercase tracking-widest rounded-2xl hover:bg-brand-700 transition shadow-xl flex items-center justify-center group disabled:opacity-50"
+                    >
+                      {isDownloading ? (
+                        <span className="flex items-center">
+                          <Clock className="w-5 h-5 mr-3 animate-spin" /> Generating...
+                        </span>
+                      ) : (
+                        <span className="flex items-center">
+                          <Download className="w-5 h-5 mr-3 group-hover:animate-bounce" /> Download Official Certificate
+                        </span>
+                      )}
+                    </button>
+                    <button 
+                      onClick={() => window.print()}
+                      className="flex-1 py-4 md:py-6 bg-slate-900 text-white font-black text-xs md:text-sm uppercase tracking-widest rounded-2xl hover:bg-black transition shadow-xl flex items-center justify-center group"
+                    >
+                      <FileText className="w-5 h-5 mr-3" /> Print Certificate
+                    </button>
+                  </div>
                 </div>
               ) : (
                 <div className="bg-white p-16 rounded-[3rem] border border-gray-100 shadow-sm text-center">
