@@ -98,6 +98,7 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
   const [editEmail, setEditEmail] = useState(user.email);
   const [editCountry, setEditCountry] = useState(user.country || 'Nigeria');
   const [newPassword, setNewPassword] = useState('');
+  const [reviewLoading, setReviewLoading] = useState(false);
   const [profileLoading, setProfileLoading] = useState(false);
   const [profileMessage, setProfileMessage] = useState({ text: '', type: '' });
   
@@ -138,6 +139,14 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
     setUserAnswers({ ...userAnswers, [q.id]: optionIndex });
   };
 
+  const finishQuiz = () => {
+    const score = calculateScore();
+    if (score >= 75) {
+      handleBadgeEarned(activeTest?.difficulty || 'easy');
+    }
+    setQuizFinished(true);
+  };
+
   const handleNextQuestion = () => {
     if (!activeTest) return;
     
@@ -150,17 +159,27 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
     if (currentQuestionIndex < activeTest.questions.length - 1) {
       setCurrentQuestionIndex(currentQuestionIndex + 1);
     } else {
-      const score = calculateScore();
-      if (score >= 85) {
-        handleBadgeEarned(activeTest.difficulty || 'easy');
-      }
-      setQuizFinished(true);
+      finishQuiz();
     }
   };
 
-  const handleBadgeEarned = (difficulty: string) => {
+  const handleBadgeEarned = async (difficulty: string) => {
     const badgeName = difficulty.charAt(0).toUpperCase() + difficulty.slice(1) + " Mastery Badge";
     setEarnedBadge(badgeName);
+    
+    // Save badge to database
+    try {
+      const currentBadges = user.badges || [];
+      if (!currentBadges.includes(badgeName)) {
+        const newBadges = [...currentBadges, badgeName];
+        const { error } = await supabase.from('profiles').update({ badges: newBadges }).eq('id', user.id);
+        if (!error) {
+          onUpdateProfile();
+        }
+      }
+    } catch (err) {
+      console.error("Error saving badge:", err);
+    }
     
     // Realistic confetti popper effect
     const duration = 5 * 1000;
@@ -332,6 +351,8 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
   };
 
   const handleSubmitReview = async () => {
+    if (reviewLoading || !reviewText.trim()) return;
+    setReviewLoading(true);
     const success = await addReview(reviewText, rating);
     if (success) {
       setReviewSubmitted(true);
@@ -339,6 +360,7 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
     } else {
       alert("Failed to submit review. Please try again.");
     }
+    setReviewLoading(false);
   };
 
   const handleContactAdminPayment = (platform: 'whatsapp' | 'telegram') => {
@@ -602,7 +624,7 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
                         👑 Upgrade to Premium (Contact Admin)
                       </button>
                       <button 
-                        onClick={() => { setShowPaywall(false); setQuizFinished(true); }}
+                        onClick={() => { setShowPaywall(false); finishQuiz(); }}
                         className="flex-1 bg-transparent border-2 border-brand-400 text-white px-8 py-5 rounded-2xl font-black text-xs uppercase tracking-[0.2em] hover:bg-brand-700/50 transition"
                       >
                         See Results of Answered Questions
@@ -684,6 +706,22 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
         return (
           <div className="animate-in fade-in duration-500">
             <h2 className="text-3xl font-serif font-bold mb-4 text-slate-900 uppercase tracking-tight">Readiness Assessments</h2>
+            
+            {user.badges && user.badges.length > 0 && (
+              <div className="mb-10 bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm">
+                <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-6 flex items-center gap-2">
+                  <Award className="w-4 h-4 text-brand-500" /> My Clinical Mastery Badges
+                </p>
+                <div className="flex flex-wrap gap-3">
+                  {user.badges.map((badge, idx) => (
+                    <div key={idx} className="bg-brand-50 text-brand-600 px-5 py-3 rounded-2xl text-xs font-black uppercase tracking-widest border border-brand-100 flex items-center gap-2 shadow-sm animate-in zoom-in duration-300">
+                      <CheckCircle2 className="w-4 h-4" /> {badge}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
             <div className="flex items-center gap-4 mb-10">
               <p className="text-sm font-black uppercase tracking-widest text-slate-500">Filter by Difficulty:</p>
               <select
@@ -800,6 +838,19 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
                   <h3 className="text-xl font-bold text-slate-900">{user.name}</h3>
                   <p className="text-brand-600 font-black uppercase tracking-widest text-[10px] mt-1">{user.role}</p>
                   
+                  {user.badges && user.badges.length > 0 && (
+                    <div className="mt-8 pt-8 border-t border-slate-100">
+                      <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-4">My Achievements</p>
+                      <div className="flex flex-wrap justify-center gap-2">
+                        {user.badges.map((badge, idx) => (
+                          <div key={idx} className="bg-brand-50 text-brand-600 px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border border-brand-100 flex items-center gap-1.5">
+                            <Award className="w-3 h-3" /> {badge}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
                   <div className="mt-8 space-y-3">
                     <div className="flex items-center text-xs font-bold text-slate-500 bg-slate-50 p-4 rounded-xl">
                       <Mail className="w-4 h-4 mr-3 text-brand-400" /> {user.email}

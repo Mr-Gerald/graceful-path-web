@@ -2,7 +2,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { 
   Users, BookOpen, Settings, Plus, LogOut, LayoutDashboard, Trash2, Send, X, 
-  Upload, Menu, Globe, Phone, MessageCircle, Video, FileText, Calendar, ShieldAlert, Edit2, Check, Image, Key, Lock, Camera, Star, Zap, CheckCircle, ChevronRight, Save, File, BarChart3, Sparkles
+  Upload, Menu, Globe, Phone, MessageCircle, Video, FileText, Calendar, ShieldAlert, Edit2, Check, Image, Key, Lock, Camera, Star, Zap, CheckCircle, CheckCircle2, ChevronRight, Save, File, BarChart3, Sparkles
 } from 'lucide-react';
 import { BrandingAssets, Review, PracticeTest, QuizQuestion } from '../../types';
 import { Logo } from '../../components/Layout';
@@ -12,14 +12,14 @@ import { geminiService } from '../../services/geminiService';
 interface AdminDashboardProps {
   onLogout: () => void;
   users: any[];
-  onDeleteUser: (id: string) => void;
-  onApprovePayment: (id: string) => void;
-  onApproveUser: (id: string) => void;
-  onUnapprovePayment: (id: string) => void;
-  onUnapproveUser: (id: string) => void;
-  onApproveCertificate: (id: string) => void;
-  onRevokeCertificate: (id: string) => void;
-  onSendNotification: (title: string, text: string, userId: string | 'ALL') => void;
+  onDeleteUser: (id: string) => Promise<void>;
+  onApprovePayment: (id: string) => Promise<void>;
+  onApproveUser: (id: string) => Promise<void>;
+  onUnapprovePayment: (id: string) => Promise<void>;
+  onUnapproveUser: (id: string) => Promise<void>;
+  onApproveCertificate: (id: string) => Promise<void>;
+  onRevokeCertificate: (id: string) => Promise<void>;
+  onSendNotification: (title: string, text: string, userId: string | 'ALL') => Promise<void>;
   courseContent: any;
   setCourseContent: any;
   practiceTests: PracticeTest[];
@@ -34,9 +34,9 @@ interface AdminDashboardProps {
   setExamDate: (d: string) => void;
 
   isSaving?: boolean;
-  onSave?: () => void;
+  onSave?: () => Promise<void>;
   reviews: Review[];
-  onDeleteReview: (id: string) => void;
+  onDeleteReview: (id: string) => Promise<void>;
 }
 
 const FileUploadButton: React.FC<{ 
@@ -108,6 +108,27 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   const [notificationTarget, setNotificationTarget] = useState<string | 'ALL'>('ALL');
   const [notifTitle, setNotifTitle] = useState('');
   const [notifText, setNotifText] = useState('');
+  const [processingId, setProcessingId] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (successMessage) {
+      const timer = setTimeout(() => setSuccessMessage(null), 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [successMessage]);
+
+  const handleAction = async (id: string, action: () => Promise<void>, message: string) => {
+    setProcessingId(id);
+    try {
+      await action();
+      setSuccessMessage(message);
+    } catch (error: any) {
+      console.error(error);
+    } finally {
+      setProcessingId(null);
+    }
+  };
 
   // Admin Security
   const [newAdminPassword, setNewAdminPassword] = useState('');
@@ -280,35 +301,78 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                         <td className="px-8 py-5">
                           <div className="flex flex-col gap-2">
                             {u.is_approved ? (
-                              <button onClick={() => onUnapproveUser(u.id)} className="px-3 py-1 bg-green-50 text-green-600 text-[10px] font-black uppercase tracking-widest rounded-full border border-green-100 hover:bg-red-50 hover:text-red-600 hover:border-red-100 transition text-center group">
-                                <span className="group-hover:hidden">Approved</span>
-                                <span className="hidden group-hover:inline">Revoke Access</span>
+                              <button 
+                                disabled={processingId === u.id}
+                                onClick={() => handleAction(u.id, () => onUnapproveUser(u.id), 'User access revoked')} 
+                                className="px-3 py-1 bg-green-50 text-green-600 text-[10px] font-black uppercase tracking-widest rounded-full border border-green-100 hover:bg-red-50 hover:text-red-600 hover:border-red-100 transition text-center group disabled:opacity-50"
+                              >
+                                <span className={processingId === u.id ? 'hidden' : 'group-hover:hidden'}>Approved</span>
+                                <span className={processingId === u.id ? 'hidden' : 'hidden group-hover:inline'}>Revoke Access</span>
+                                {processingId === u.id && 'Processing...'}
                               </button>
                             ) : (
-                              <button onClick={() => onApproveUser(u.id)} className="px-3 py-1 bg-brand-600 text-white text-[10px] font-black uppercase tracking-widest rounded-full border border-brand-600 hover:bg-brand-700 transition">Approve User</button>
+                              <button 
+                                disabled={processingId === u.id}
+                                onClick={() => handleAction(u.id, () => onApproveUser(u.id), 'User approved successfully')} 
+                                className="px-3 py-1 bg-brand-600 text-white text-[10px] font-black uppercase tracking-widest rounded-full border border-brand-600 hover:bg-brand-700 transition disabled:opacity-50"
+                              >
+                                {processingId === u.id ? 'Processing...' : 'Approve User'}
+                              </button>
                             )}
                             {u.has_paid_live ? (
-                              <button onClick={() => onUnapprovePayment(u.id)} className="px-3 py-1 bg-green-50 text-green-600 text-[10px] font-black uppercase tracking-widest rounded-full border border-green-100 hover:bg-red-50 hover:text-red-600 hover:border-red-100 transition text-center group">
-                                <span className="group-hover:hidden">Premium Access</span>
-                                <span className="hidden group-hover:inline">Revoke Premium</span>
+                              <button 
+                                disabled={processingId === u.id}
+                                onClick={() => handleAction(u.id, () => onUnapprovePayment(u.id), 'Premium access revoked')} 
+                                className="px-3 py-1 bg-green-50 text-green-600 text-[10px] font-black uppercase tracking-widest rounded-full border border-green-100 hover:bg-red-50 hover:text-red-600 hover:border-red-100 transition text-center group disabled:opacity-50"
+                              >
+                                <span className={processingId === u.id ? 'hidden' : 'group-hover:hidden'}>Premium Access</span>
+                                <span className={processingId === u.id ? 'hidden' : 'hidden group-hover:inline'}>Revoke Premium</span>
+                                {processingId === u.id && 'Processing...'}
                               </button>
                             ) : (
-                              <button onClick={() => onApprovePayment(u.id)} className="px-3 py-1 bg-brand-50 text-brand-600 text-[10px] font-black uppercase tracking-widest rounded-full border border-brand-100 hover:bg-brand-600 hover:text-white transition">Approve Premium</button>
+                              <button 
+                                disabled={processingId === u.id}
+                                onClick={() => handleAction(u.id, () => onApprovePayment(u.id), 'Premium access granted')} 
+                                className="px-3 py-1 bg-brand-50 text-brand-600 text-[10px] font-black uppercase tracking-widest rounded-full border border-brand-100 hover:bg-brand-600 hover:text-white transition disabled:opacity-50"
+                              >
+                                {processingId === u.id ? 'Processing...' : 'Approve Premium'}
+                              </button>
                             )}
                             {u.has_certificate ? (
-                              <button onClick={() => onRevokeCertificate(u.id)} className="px-3 py-1 bg-brand-600 text-white text-[10px] font-black uppercase tracking-widest rounded-full border border-brand-600 hover:bg-red-600 transition text-center group">
-                                <span className="group-hover:hidden">Certificate Issued</span>
-                                <span className="hidden group-hover:inline">Revoke Certificate</span>
+                              <button 
+                                disabled={processingId === u.id}
+                                onClick={() => handleAction(u.id, () => onRevokeCertificate(u.id), 'Certificate revoked')} 
+                                className="px-3 py-1 bg-brand-600 text-white text-[10px] font-black uppercase tracking-widest rounded-full border border-brand-600 hover:bg-red-600 transition text-center group disabled:opacity-50"
+                              >
+                                <span className={processingId === u.id ? 'hidden' : 'group-hover:hidden'}>Certificate Issued</span>
+                                <span className={processingId === u.id ? 'hidden' : 'hidden group-hover:inline'}>Revoke Certificate</span>
+                                {processingId === u.id && 'Processing...'}
                               </button>
                             ) : (
-                              <button onClick={() => onApproveCertificate(u.id)} className="px-3 py-1 bg-white text-slate-400 text-[10px] font-black uppercase tracking-widest rounded-full border border-slate-200 hover:bg-brand-600 hover:text-white hover:border-brand-600 transition">Issue Certificate</button>
+                              <button 
+                                disabled={processingId === u.id}
+                                onClick={() => handleAction(u.id, () => onApproveCertificate(u.id), 'Certificate issued successfully')} 
+                                className="px-3 py-1 bg-white text-slate-400 text-[10px] font-black uppercase tracking-widest rounded-full border border-slate-200 hover:bg-brand-600 hover:text-white hover:border-brand-600 transition disabled:opacity-50"
+                              >
+                                {processingId === u.id ? 'Processing...' : 'Issue Certificate'}
+                              </button>
                             )}
                           </div>
                         </td>
                         <td className="px-8 py-5 text-right">
                           <div className="flex items-center justify-end gap-2">
                             <button onClick={() => { setNotificationTarget(u.id); setNotifTitle('Direct Message'); setShowNotifyModal(true); }} className="p-2 text-slate-400 hover:text-brand-600 transition"><Send className="w-4 h-4" /></button>
-                            <button onClick={() => onDeleteUser(u.id)} className="p-2 text-slate-400 hover:text-red-500 transition"><Trash2 className="w-4 h-4" /></button>
+                            <button 
+                              disabled={processingId === u.id}
+                              onClick={() => {
+                                if (confirm('Are you sure you want to delete this user? This cannot be undone.')) {
+                                  handleAction(u.id, () => onDeleteUser(u.id), 'User deleted successfully');
+                                }
+                              }} 
+                              className="p-2 text-slate-400 hover:text-red-500 transition disabled:opacity-50"
+                            >
+                              {processingId === u.id ? <Zap className="w-4 h-4 animate-pulse" /> : <Trash2 className="w-4 h-4" />}
+                            </button>
                           </div>
                         </td>
                       </tr>
@@ -358,7 +422,17 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                             <p className="text-slate-600 font-medium max-w-md line-clamp-2 italic">"{r.text}"</p>
                          </td>
                          <td className="px-8 py-5 text-right">
-                           <button onClick={() => onDeleteReview(r.id)} className="p-3 text-slate-300 hover:text-red-500 transition hover:bg-red-50 rounded-xl"><Trash2 className="w-5 h-5" /></button>
+                           <button 
+                             disabled={processingId === r.id}
+                             onClick={() => {
+                               if (confirm('Are you sure you want to delete this review?')) {
+                                 handleAction(r.id, () => onDeleteReview(r.id), 'Review deleted successfully');
+                               }
+                             }} 
+                             className="p-3 text-slate-300 hover:text-red-500 transition hover:bg-red-50 rounded-xl disabled:opacity-50"
+                           >
+                             {processingId === r.id ? <Zap className="w-5 h-5 animate-pulse" /> : <Trash2 className="w-5 h-5" />}
+                           </button>
                          </td>
                        </tr>
                      ))
@@ -766,6 +840,21 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col lg:flex-row transition-all duration-300">
+      {/* Success Toast */}
+      {successMessage && (
+        <div className="fixed bottom-10 right-10 z-[1000] animate-in slide-in-from-right-10 duration-500">
+          <div className="bg-slate-900 text-white px-8 py-4 rounded-2xl shadow-2xl flex items-center gap-3 border border-slate-800">
+            <div className="w-8 h-8 rounded-full bg-green-500 flex items-center justify-center">
+              <CheckCircle2 className="w-5 h-5 text-white" />
+            </div>
+            <div>
+              <p className="text-xs font-black uppercase tracking-widest">Action Successful</p>
+              <p className="text-sm font-bold text-slate-300">{successMessage}</p>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="lg:hidden flex items-center justify-between p-4 bg-slate-900 text-white sticky top-0 z-50 shadow-lg">
         <Logo />
         <button onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} className="p-2"><Menu className="w-7 h-7" /></button>

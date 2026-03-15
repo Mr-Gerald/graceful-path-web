@@ -621,7 +621,7 @@ const App: React.FC = () => {
     if (!error) {
       if (currentUser?.id === userId) setCurrentUser({ ...currentUser, hasPaidLive: true });
       addNotification("Access Unlocked!", "Your premium academy content is now ready.", userId);
-      fetchAllStudents();
+      await fetchAllStudents();
     }
   };
 
@@ -630,7 +630,7 @@ const App: React.FC = () => {
     if (!error) {
       if (currentUser?.id === userId) setCurrentUser({ ...currentUser, hasPaidLive: false });
       addNotification("Access Revoked", "Your premium academy access has been revoked.", userId);
-      fetchAllStudents();
+      await fetchAllStudents();
     }
   };
 
@@ -639,7 +639,7 @@ const App: React.FC = () => {
     if (!error) {
       if (currentUser?.id === userId) setCurrentUser({ ...currentUser, isApproved: true });
       addNotification("Account Approved!", "You now have full access to Materials and Courses.", userId);
-      fetchAllStudents();
+      await fetchAllStudents();
     }
   };
 
@@ -648,7 +648,7 @@ const App: React.FC = () => {
     if (!error) {
       if (currentUser?.id === userId) setCurrentUser({ ...currentUser, isApproved: false });
       addNotification("Account Unapproved", "Your account access has been revoked.", userId);
-      fetchAllStudents();
+      await fetchAllStudents();
     }
   };
 
@@ -657,7 +657,7 @@ const App: React.FC = () => {
     if (!error) {
       if (currentUser?.id === userId) setCurrentUser({ ...currentUser, hasCertificate: true });
       addNotification("Certificate Issued!", "Your official NCLEX Mastery Certificate is now available in your dashboard.", userId);
-      fetchAllStudents();
+      await fetchAllStudents();
     }
   };
 
@@ -666,7 +666,7 @@ const App: React.FC = () => {
     if (!error) {
       if (currentUser?.id === userId) setCurrentUser({ ...currentUser, hasCertificate: false });
       addNotification("Certificate Revoked", "Your certificate has been revoked for review.", userId);
-      fetchAllStudents();
+      await fetchAllStudents();
     }
   };
 
@@ -742,7 +742,7 @@ const App: React.FC = () => {
             onDeleteReview={handleDeleteReview} 
             onLogout={() => setShowLogoutConfirm(true)} 
             users={allStudents} 
-            onDeleteUser={async (id) => { await supabase.from('profiles').delete().eq('id', id); fetchAllStudents(); }} 
+            onDeleteUser={async (id) => { await supabase.from('profiles').delete().eq('id', id); await fetchAllStudents(); }} 
             onApprovePayment={handleApprovePayment} 
             onUnapprovePayment={handleUnapprovePayment}
             onApproveUser={handleApproveUser} 
