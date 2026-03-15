@@ -211,7 +211,7 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
     if (!certificateRef.current) return;
     setIsDownloading(true);
     try {
-      const canvas = await html2canvas(certificateRef.current, {
+      const canvas = await (html2canvas as any)(certificateRef.current, {
         scale: 2, // Higher quality
         useCORS: true,
         backgroundColor: '#ffffff',
