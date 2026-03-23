@@ -1,6 +1,6 @@
 
 import { GoogleGenAI, Type } from "@google/genai";
-import { supabase } from '../services/supabaseClient';
+import { supabase } from './supabaseClient';
 
 // Use multiple possible environment variables for the API key to ensure compatibility
 // Use multiple possible environment variables for the API key to ensure compatibility
@@ -61,7 +61,7 @@ export const geminiService = {
     return await callWithKeyRotation(async (ai) => {
       // Initialize chat with history for better context awareness
       const chat = ai.chats.create({
-        model: 'gemini-3-pro-preview',
+        model: 'gemini-3.1-pro-preview',
         history,
         config: {
           systemInstruction: `You are an expert clinical nursing tutor for Graceful Path Global Health. 
@@ -86,7 +86,7 @@ export const geminiService = {
   async analyzeStudyMaterial(base64Image: string, prompt: string) {
     return await callWithKeyRotation(async (ai) => {
       const response = await ai.models.generateContent({
-        model: 'gemini-3-pro-preview',
+        model: 'gemini-3.1-pro-preview',
         contents: {
           parts: [
             { inlineData: { data: base64Image, mimeType: 'image/jpeg' } },
@@ -104,7 +104,7 @@ export const geminiService = {
   async generateStudyPlan(weakAreas: string[], examDate: string) {
     return await callWithKeyRotation(async (ai) => {
       const response = await ai.models.generateContent({
-        model: 'gemini-3-flash-preview',
+        model: 'gemini-3.1-flash-preview',
         contents: `Generate a structured clinical study plan focusing on: ${weakAreas.join(', ')}. 
         The target exam date is ${examDate}. Provide the response in JSON format.`,
         config: {
@@ -127,7 +127,9 @@ export const geminiService = {
           }
         }
       });
-      return JSON.parse(response.text || '{}');
+      const text = response.text || '{}';
+      const cleanJson = text.replace(/```json\n?|```/g, '').trim();
+      return JSON.parse(cleanJson || '{}');
     });
   },
 
@@ -152,7 +154,7 @@ export const geminiService = {
         const batchQuestions = await callWithKeyRotation(async (ai) => {
           if (onProgress) onProgress(`📝 Generating Question ${i + 1} of ${count}...`);
           const response = await ai.models.generateContent({
-            model: 'gemini-3-flash-preview',
+            model: 'gemini-3.1-flash-preview',
             contents: `Generate 1 NCLEX-style multiple choice question on the topic: ${topic}. 
             Difficulty level: ${difficulty}. 
             This is question ${i + 1} of ${count}.
@@ -173,7 +175,9 @@ export const geminiService = {
           });
           
           if (onProgress) onProgress(`✅ Validating options and clinical reasoning for Question ${i + 1}...`);
-          const qData = JSON.parse(response.text || '{}');
+          const text = response.text || '{}';
+          const cleanJson = text.replace(/```json\n?|```/g, '').trim();
+          const qData = JSON.parse(cleanJson || '{}');
           if (qData.question) {
             const formattedQ = {
               ...qData,

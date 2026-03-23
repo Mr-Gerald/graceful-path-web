@@ -326,12 +326,12 @@ export const Home: React.FC<HomeProps> = ({ onNavigate, reviews, links, branding
                 icon: <ShieldCheck className="w-6 h-6" />
               },
               {
-                title: "CANRN Registration Guidance",
+                title: "CANADIAN RN Registration Guidance",
                 desc: "Professional guidance through the Canadian Registered Nurse (CANRN) registration process, helping you meet all requirements efficiently.",
                 icon: <Award className="w-6 h-6" />
               },
               {
-                title: "AUSRN Registration Guidance",
+                title: "AURN Registration Guidance",
                 desc: "Unlock your nursing career in Australia. We provide expert guidance through the AHPRA registration pathway, including specialized preparation for the NCLEX-RN and OSCE. From initial assessment to clinical readiness, we ensure you meet the high standards of the Australian healthcare system and transition smoothly to life 'Down Under'.",
                 icon: <Activity className="w-6 h-6" />
               },
