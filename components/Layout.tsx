@@ -6,7 +6,7 @@ import { UserRole } from '../types';
 export const Logo = ({ className }: { className?: string }) => (
   <div className={`flex flex-col items-center justify-center cursor-pointer group scale-95 md:scale-100 ${className || ''}`} onClick={() => window.location.hash = '/'}>
     <img 
-      src="https://scontent.flos3-2.fna.fbcdn.net/v/t1.15752-9/627752552_2511858222545536_1185950041510102102_n.jpg?_nc_cat=106&ccb=1-7&_nc_sid=0024fc&_nc_ohc=rk8yn6_f2v4Q7kNvwF5_Nqr&_nc_oc=Adl-JvHCIA6urfsCJTKkNhn2cRm0JSHeovALL736y7iSpLkzhfFykX4NY9d-WG48JUA&_nc_ad=z-m&_nc_cid=1361&_nc_zt=23&_nc_ht=scontent.flos3-2.fna&oh=03_Q7cD4gG0Us99OppOz9pI2XVOozOxqTYN-fxMUMIKY_igRSWB3g&oe=69B740BC" 
+      src="https://scontent.flos2-2.fna.fbcdn.net/v/t1.15752-9/637892089_1852437922090798_1493900335337598158_n.jpg?stp=dst-jpg_s526x395_tt6&_nc_cat=102&ccb=1-7&_nc_sid=0024fc&_nc_ohc=b1FTwJ_5q4EQ7kNvwFsu0hY&_nc_oc=AdqmhYG7spDywp5UGpKAzAC-cGJpjAf81RTpVE6krgfuV2iuSChRPMr2bbJOUpLfMbI&_nc_ad=z-m&_nc_cid=1361&_nc_zt=23&_nc_ht=scontent.flos2-2.fna&_nc_ss=7a32e&oh=03_Q7cD5AEmwUAvgzy2x3DpP6l2yEKSAlCRRLAqHH4fGy7JYgBH4Q&oe=69F9BE37" 
       alt="Graceful Path Logo" 
       className="h-9 w-auto mb-0.5 transform group-hover:scale-110 transition duration-500" 
     />
