@@ -449,9 +449,11 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                <div className="bg-white p-10 rounded-[3rem] border border-slate-100 shadow-sm space-y-12">
                  <div>
                    <h3 className="text-2xl font-serif font-bold mb-8 text-slate-900 flex items-center gap-3">
-                     <Image className="w-6 h-6 text-brand-500" /> Homepage Photos (5 Total)
+                     <Image className="w-6 h-6 text-brand-500" /> Website Branding & Photos
                    </h3>
                    <div className="grid grid-cols-1 gap-6">
+                      <ImageInputGroup label="Website Logo" value={branding.logo || ''} field="logo" />
+                      <ImageInputGroup label="Website Favicon" value={branding.favicon || ''} field="favicon" />
                       <ImageInputGroup label="1. Main Hero Image" value={branding.heroImage} field="heroImage" />
                       <ImageInputGroup label="2. Founder Biography Image" value={branding.founderImage} field="founderImage" />
                       <ImageInputGroup label="3. Expert Mentor Spotlight (Eniola)" value={branding.tutorImage} field="tutorImage" />

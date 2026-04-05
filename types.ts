@@ -93,4 +93,6 @@ export interface BrandingAssets {
   heroImage: string;
   spotlightImage: string;
   aboutImage: string;
+  favicon?: string;
+  logo?: string;
 }
