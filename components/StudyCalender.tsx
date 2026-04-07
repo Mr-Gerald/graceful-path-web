@@ -143,7 +143,7 @@ const StudyCalendar: React.FC = () => {
 
     return (
       <div className="grid grid-cols-7 gap-2 md:gap-4">
-        {calendarDays.map((day) => {
+        {calendarDays.map((day: Date) => {
           const dayEvents = events.filter(e => isSameDay(e.date, day));
           const isCurrentMonth = isSameMonth(day, monthStart);
           const isSelected = isSameDay(day, selectedDate);

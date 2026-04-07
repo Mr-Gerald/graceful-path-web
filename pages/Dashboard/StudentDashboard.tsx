@@ -8,7 +8,7 @@ import {
   Lock, Download, Star, MessageCircle, X, Menu, Trash2, Heart, ShieldCheck, Zap, Globe, CreditCard,
   User as UserIcon, Camera, Key, Mail, Phone, AtSign, Edit2, Upload as UploadIcon, ChevronDown, CheckCircle
 } from 'lucide-react';
-import { User, PracticeTest, QuizQuestion } from '../../types';
+import { User, PracticeTest, QuizQuestion, Notification, Module, Lesson, NavLink } from '../../types';
 import { Logo } from '../../components/Layout';
 import StudyCalendar from '../../components/StudyCalendar';
 import { supabase } from '../../services/supabaseClient';
@@ -18,17 +18,17 @@ interface StudentDashboardProps {
   user: User;
   onLogout: () => void;
   addReview: (text: string, rating: number) => Promise<boolean>;
-  notifications: any[];
+  notifications: Notification[];
   onDeleteNotification: (id: string) => void;
-  courseContent: any;
+  courseContent: Record<string, Lesson[]>;
   practiceTests: PracticeTest[];
-  materials: any[];
-  links: any;
+  materials: Lesson[];
+  links: NavLink[];
   examDate: string;
   onUpdateProfile: () => void;
 }
 
-const getRelativeTime = (dateInput: any) => {
+const getRelativeTime = (dateInput: string | Date) => {
   try {
     const date = new Date(dateInput);
     if (isNaN(date.getTime())) return 'Recently';
@@ -195,7 +195,7 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
 
     const randomInRange = (min: number, max: number) => Math.random() * (max - min) + min;
 
-    const interval: any = setInterval(function() {
+    const interval = setInterval(function() {
       const timeLeft = animationEnd - Date.now();
 
       if (timeLeft <= 0) {
@@ -317,7 +317,7 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
 
     try {
       // We build the update object dynamically
-      const updateData: any = {
+      const updateData: Partial<User> = {
         name: editName,
         username: editUsername,
       };
@@ -357,8 +357,8 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
       }
 
       onUpdateProfile();
-    } catch (err: any) {
-      setProfileMessage({ text: err.message, type: 'error' });
+    } catch (err) {
+      setProfileMessage({ text: (err as any).message, type: 'error' });
     } finally {
       setProfileLoading(false);
     }
@@ -373,8 +373,8 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
       if (error) throw error;
       setNewPassword('');
       setProfileMessage({ text: 'Password changed successfully!', type: 'success' });
-    } catch (err: any) {
-      setProfileMessage({ text: err.message, type: 'error' });
+    } catch (err) {
+      setProfileMessage({ text: (err as any).message, type: 'error' });
     } finally {
       setProfileLoading(false);
     }
@@ -1024,7 +1024,7 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
                       {!isActive && <Lock className="w-5 h-5 text-slate-300" />}
                     </div>
                     <div className="space-y-3 mb-10 flex-grow">
-                      {items.map((item: any, idx: number) => (
+                      {items.map((item: Lesson, idx: number) => (
                         <div key={idx} className="flex items-center justify-between text-sm font-bold text-slate-700 bg-slate-50 p-4 rounded-xl border border-slate-100 group">
                           <div 
                             className="flex items-center cursor-pointer hover:text-brand-600 transition flex-grow"

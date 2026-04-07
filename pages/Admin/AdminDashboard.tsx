@@ -4,14 +4,14 @@ import {
   Users, BookOpen, Settings, Plus, LogOut, LayoutDashboard, Trash2, Send, X, 
   Upload, Menu, Globe, Phone, MessageCircle, Video, FileText, Calendar, ShieldAlert, Edit2, Check, Image, Key, Lock, Camera, Star, Zap, CheckCircle, CheckCircle2, ChevronRight, Save, File, BarChart3, Sparkles
 } from 'lucide-react';
-import { BrandingAssets, Review, PracticeTest, QuizQuestion } from '../../types';
+import { BrandingAssets, Review, PracticeTest, QuizQuestion, User, Module, Lesson, NavLink } from '../../types';
 import { Logo } from '../../components/Layout';
 import { supabase } from '../../services/supabaseClient';
 import { geminiService } from '../../services/geminiService';
 
 interface AdminDashboardProps {
   onLogout: () => void;
-  users: any[];
+  users: User[];
   onDeleteUser: (id: string) => Promise<void>;
   onApprovePayment: (id: string) => Promise<void>;
   onApproveUser: (id: string) => Promise<void>;
@@ -20,14 +20,14 @@ interface AdminDashboardProps {
   onApproveCertificate: (id: string) => Promise<void>;
   onRevokeCertificate: (id: string) => Promise<void>;
   onSendNotification: (title: string, text: string, userId: string | 'ALL') => Promise<void>;
-  courseContent: any;
-  setCourseContent: any;
+  courseContent: Record<string, Lesson[]>;
+  setCourseContent: React.Dispatch<React.SetStateAction<Record<string, Lesson[]>>>;
   practiceTests: PracticeTest[];
-  setPracticeTests: any;
-  materials: any[];
-  setMaterials: any;
-  globalLinks: any;
-  setGlobalLinks: any;
+  setPracticeTests: React.Dispatch<React.SetStateAction<PracticeTest[]>>;
+  materials: Lesson[];
+  setMaterials: React.Dispatch<React.SetStateAction<Lesson[]>>;
+  globalLinks: NavLink[];
+  setGlobalLinks: React.Dispatch<React.SetStateAction<NavLink[]>>;
   branding: BrandingAssets;
   setBranding: (b: BrandingAssets) => void;
   examDate: string;
@@ -123,7 +123,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     try {
       await action();
       setSuccessMessage(message);
-    } catch (error: any) {
+    } catch (error) {
       console.error(error);
     } finally {
       setProcessingId(null);
@@ -173,7 +173,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
       if (error) throw error;
       setNewAdminPassword('');
       setSecurityMessage({ text: 'Admin password updated successfully!', type: 'success' });
-    } catch (err: any) {
+    } catch (err) {
       setSecurityMessage({ text: err.message, type: 'error' });
     } finally {
       setSecurityLoading(false);
@@ -678,7 +678,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                   }} className="p-3 bg-brand-50 text-brand-600 rounded-xl hover:bg-brand-600 hover:text-white transition shadow-sm"><Plus className="w-5 h-5" /></button>
                 </div>
                 <div className="space-y-4">
-                  {courseContent[stage]?.map((item: any, idx: number) => (
+                  {courseContent[stage]?.map((item: Lesson, idx: number) => (
                     <div key={idx} className="p-6 bg-slate-50 rounded-[2rem] border border-slate-100 group">
                       <div className="flex items-center justify-between mb-4">
                         <input value={item.title} onChange={e => {

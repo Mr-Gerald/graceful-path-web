@@ -96,3 +96,23 @@ export interface BrandingAssets {
   favicon?: string;
   logo?: string;
 }
+
+export interface NavLink {
+  label: string;
+  path: string;
+  isExternal?: boolean;
+}
+
+export interface DashboardLink {
+  label: string;
+  path: string;
+  icon?: any;
+}
+
+export interface Notification {
+  id: string;
+  user_id: string | 'ALL';
+  title: string;
+  text: string;
+  created_at: string;
+}

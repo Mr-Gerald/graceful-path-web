@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
 import { Menu, X, User as UserIcon, LogIn, PhoneCall, MessageCircle, LogOut, Globe } from 'lucide-react';
 import { NAV_LINKS } from '../constants';
-import { UserRole } from '../types';
+import { BrandingAssets, NavLink, UserRole } from '../types';
 
-export const Logo = ({ className }: { className?: string }) => (
+export const Logo = ({ className, src }: { className?: string, src?: string }) => (
   <div className={`flex flex-col items-center justify-center cursor-pointer group scale-95 md:scale-100 ${className || ''}`} onClick={() => window.location.hash = '/'}>
     <img 
-      src="https://scontent.flos2-2.fna.fbcdn.net/v/t1.15752-9/637892089_1852437922090798_1493900335337598158_n.jpg?stp=dst-jpg_s526x395_tt6&_nc_cat=102&ccb=1-7&_nc_sid=0024fc&_nc_ohc=b1FTwJ_5q4EQ7kNvwFsu0hY&_nc_oc=AdqmhYG7spDywp5UGpKAzAC-cGJpjAf81RTpVE6krgfuV2iuSChRPMr2bbJOUpLfMbI&_nc_ad=z-m&_nc_cid=1361&_nc_zt=23&_nc_ht=scontent.flos2-2.fna&_nc_ss=7a32e&oh=03_Q7cD5AEmwUAvgzy2x3DpP6l2yEKSAlCRRLAqHH4fGy7JYgBH4Q&oe=69F9BE37" 
+      src={src || "https://scontent.flos2-2.fna.fbcdn.net/v/t1.15752-9/637892089_1852437922090798_1493900335337598158_n.jpg?stp=dst-jpg_s526x395_tt6&_nc_cat=102&ccb=1-7&_nc_sid=0024fc&_nc_ohc=b1FTwJ_5q4EQ7kNvwFsu0hY&_nc_oc=AdqmhYG7spDywp5UGpKAzAC-cGJpjAf81RTpVE6krgfuV2iuSChRPMr2bbJOUpLfMbI&_nc_ad=z-m&_nc_cid=1361&_nc_zt=23&_nc_ht=scontent.flos2-2.fna&_nc_ss=7a32e&oh=03_Q7cD5AEmwUAvgzy2x3DpP6l2yEKSAlCRRLAqHH4fGy7JYgBH4Q&oe=69F9BE37"} 
       alt="Graceful Path Logo" 
       className="h-9 w-auto mb-0.5 transform group-hover:scale-110 transition duration-500" 
     />
@@ -25,9 +25,10 @@ interface LayoutProps {
   onNavigate: (path: string) => void;
   currentPath: string;
   links?: any;
+  branding?: BrandingAssets;
 }
 
-export const Layout: React.FC<LayoutProps> = ({ children, userRole = UserRole.GUEST, onNavigate, currentPath, links }) => {
+export const Layout: React.FC<LayoutProps> = ({ children, userRole = UserRole.GUEST, onNavigate, currentPath, links, branding }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const showNav = !currentPath.startsWith('/dashboard') && !currentPath.startsWith('/admin');
@@ -102,9 +103,9 @@ export const Layout: React.FC<LayoutProps> = ({ children, userRole = UserRole.GU
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex justify-between h-20">
               <div className="flex items-center">
-                <Logo />
+                <Logo src={branding?.logo} />
                 <div className="hidden lg:ml-10 lg:flex lg:space-x-6">
-                  {NAV_LINKS.map((link) => (
+                  {NAV_LINKS.map((link: NavLink) => (
                     <button
                       key={link.path}
                       onClick={() => handleNavClick(link.path, link.isExternal)}
@@ -162,7 +163,7 @@ export const Layout: React.FC<LayoutProps> = ({ children, userRole = UserRole.GU
           {isMenuOpen && (
             <div className="lg:hidden bg-white border-t border-gray-100 pb-6 pt-4 animate-in slide-in-from-top-2 duration-300">
               <div className="space-y-1 px-4">
-                {NAV_LINKS.map((link) => (
+                {NAV_LINKS.map((link: NavLink) => (
                   <button
                     key={link.path}
                     onClick={() => handleNavClick(link.path, link.isExternal)}
@@ -199,7 +200,7 @@ export const Layout: React.FC<LayoutProps> = ({ children, userRole = UserRole.GU
             <div className="grid grid-cols-1 md:grid-cols-4 gap-12 text-center md:text-left">
               <div className="col-span-1 md:col-span-2 flex flex-col items-center md:items-start">
                 <div className="mb-8 scale-110">
-                  <Logo />
+                  <Logo src={branding?.logo} />
                 </div>
                 <p className="text-slate-400 max-w-md mb-10 text-base leading-relaxed font-medium text-center md:text-left">
                   Empowering nurses worldwide with structured, simple, and confidence-building clinical preparation. 
