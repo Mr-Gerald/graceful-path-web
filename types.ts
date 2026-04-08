@@ -103,6 +103,17 @@ export interface NavLink {
   isExternal?: boolean;
 }
 
+export interface GlobalLinks {
+  whatsapp: string;
+  telegram: string;
+  phone: string;
+  liveSessionZoom: string;
+  telegramAcademyHub: string;
+  whatsappAcademyGroup: string;
+  paidLiveWhatsapp: string;
+  paidLiveTelegram: string;
+}
+
 export interface DashboardLink {
   label: string;
   path: string;

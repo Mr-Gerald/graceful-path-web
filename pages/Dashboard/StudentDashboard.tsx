@@ -8,7 +8,7 @@ import {
   Lock, Download, Star, MessageCircle, X, Menu, Trash2, Heart, ShieldCheck, Zap, Globe, CreditCard,
   User as UserIcon, Camera, Key, Mail, Phone, AtSign, Edit2, Upload as UploadIcon, ChevronDown, CheckCircle
 } from 'lucide-react';
-import { User, PracticeTest, QuizQuestion, Notification, Module, Lesson, NavLink } from '../../types';
+import { User, PracticeTest, QuizQuestion, Notification, Module, Lesson, NavLink, GlobalLinks } from '../../types';
 import { Logo } from '../../components/Layout';
 import StudyCalendar from '../../components/StudyCalendar';
 import { supabase } from '../../services/supabaseClient';
@@ -23,7 +23,7 @@ interface StudentDashboardProps {
   courseContent: Record<string, Lesson[]>;
   practiceTests: PracticeTest[];
   materials: Lesson[];
-  links: NavLink[];
+  links: GlobalLinks;
   examDate: string;
   onUpdateProfile: () => void;
 }
@@ -324,11 +324,11 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
 
       // Only add these if they are supported by your schema
       // The try/catch block below will handle the "missing column" error gracefully
-      if (editPhone) updateData.phone_number = editPhone;
+      if (editPhone) (updateData as any).phone_number = editPhone;
       if (editCountry) updateData.country = editCountry;
-      if (editAvatar !== undefined) updateData.avatar = editAvatar === '' ? null : editAvatar;
+      if (editAvatar !== undefined) updateData.avatar = editAvatar === '' ? undefined : editAvatar;
 
-      const { error: profileError } = await supabase.from('profiles').update(updateData).eq('id', user.id);
+      const { error: profileError } = await supabase.from('profiles').update(updateData as any).eq('id', user.id);
 
       if (profileError) {
         // If any column is missing, we fall back to a basic update of just name/username
@@ -1042,7 +1042,7 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
                             <button onClick={(e) => {
                               e.stopPropagation();
                               const link = document.createElement('a');
-                              link.href = item.assetData;
+                              link.href = item.assetData as string;
                               link.download = item.title;
                               link.click();
                             }} className="p-2 opacity-0 group-hover:opacity-100 transition text-brand-600 hover:bg-brand-100 rounded-lg">

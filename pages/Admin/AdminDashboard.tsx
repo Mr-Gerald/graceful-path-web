@@ -4,7 +4,7 @@ import {
   Users, BookOpen, Settings, Plus, LogOut, LayoutDashboard, Trash2, Send, X, 
   Upload, Menu, Globe, Phone, MessageCircle, Video, FileText, Calendar, ShieldAlert, Edit2, Check, Image, Key, Lock, Camera, Star, Zap, CheckCircle, CheckCircle2, ChevronRight, Save, File, BarChart3, Sparkles
 } from 'lucide-react';
-import { BrandingAssets, Review, PracticeTest, QuizQuestion, User, Module, Lesson, NavLink } from '../../types';
+import { BrandingAssets, Review, PracticeTest, QuizQuestion, User, Module, Lesson, NavLink, GlobalLinks } from '../../types';
 import { Logo } from '../../components/Layout';
 import { supabase } from '../../services/supabaseClient';
 import { geminiService } from '../../services/geminiService';
@@ -26,8 +26,8 @@ interface AdminDashboardProps {
   setPracticeTests: React.Dispatch<React.SetStateAction<PracticeTest[]>>;
   materials: Lesson[];
   setMaterials: React.Dispatch<React.SetStateAction<Lesson[]>>;
-  globalLinks: NavLink[];
-  setGlobalLinks: React.Dispatch<React.SetStateAction<NavLink[]>>;
+  globalLinks: GlobalLinks;
+  setGlobalLinks: React.Dispatch<React.SetStateAction<GlobalLinks>>;
   branding: BrandingAssets;
   setBranding: (b: BrandingAssets) => void;
   examDate: string;
@@ -174,7 +174,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
       setNewAdminPassword('');
       setSecurityMessage({ text: 'Admin password updated successfully!', type: 'success' });
     } catch (err) {
-      setSecurityMessage({ text: err.message, type: 'error' });
+      setSecurityMessage({ text: (err as any).message, type: 'error' });
     } finally {
       setSecurityLoading(false);
     }
@@ -288,7 +288,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                         </td>
                         <td className="px-8 py-5">
                           <p className="text-xs font-bold text-slate-600">{u.email || 'No email'}</p>
-                          <p className="text-[10px] text-slate-400">{u.phone_number || 'No phone'}</p>
+                          <p className="text-[10px] text-slate-400">{u.phoneNumber || 'No phone'}</p>
                         </td>
                         <td className="px-8 py-5">
                           <div className="flex items-center gap-3">
@@ -300,7 +300,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                         </td>
                         <td className="px-8 py-5">
                           <div className="flex flex-col gap-2">
-                            {u.is_approved ? (
+                            {u.isApproved ? (
                               <button 
                                 disabled={processingId === u.id}
                                 onClick={() => handleAction(u.id, () => onUnapproveUser(u.id), 'User access revoked')} 
@@ -319,7 +319,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                                 {processingId === u.id ? 'Processing...' : 'Approve User'}
                               </button>
                             )}
-                            {u.has_paid_live ? (
+                            {u.hasPaidLive ? (
                               <button 
                                 disabled={processingId === u.id}
                                 onClick={() => handleAction(u.id, () => onUnapprovePayment(u.id), 'Premium access revoked')} 
@@ -338,7 +338,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                                 {processingId === u.id ? 'Processing...' : 'Approve Premium'}
                               </button>
                             )}
-                            {u.has_certificate ? (
+                            {u.hasCertificate ? (
                               <button 
                                 disabled={processingId === u.id}
                                 onClick={() => handleAction(u.id, () => onRevokeCertificate(u.id), 'Certificate revoked')} 
@@ -673,7 +673,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                   <h3 className="text-xl font-black tracking-tight">{stage}</h3>
                   <button onClick={() => {
                     const newContent = {...courseContent};
-                    newContent[stage] = [...(newContent[stage] || []), { title: 'New Lesson', type: 'video', assetData: '' }];
+                    newContent[stage] = [...(newContent[stage] || []), { id: Date.now().toString(), title: 'New Lesson', type: 'video', completed: false, assetData: '' }];
                     setCourseContent(newContent);
                   }} className="p-3 bg-brand-50 text-brand-600 rounded-xl hover:bg-brand-600 hover:text-white transition shadow-sm"><Plus className="w-5 h-5" /></button>
                 </div>
@@ -707,7 +707,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                          />
                          <select value={item.type} onChange={e => {
                            const newContent = {...courseContent};
-                           newContent[stage][idx].type = e.target.value;
+                           newContent[stage][idx].type = e.target.value as 'video' | 'pdf' | 'quiz';
                            setCourseContent(newContent);
                          }} className="bg-white p-3 rounded-xl text-[10px] font-black uppercase tracking-widest border border-slate-200 outline-none">
                            <option value="video">Video</option>
@@ -726,7 +726,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
           <div className="bg-white p-10 rounded-[3rem] border border-slate-100 shadow-sm animate-in fade-in duration-500">
              <div className="flex items-center justify-between mb-10">
                <h3 className="text-2xl font-serif font-bold text-slate-900 uppercase">Materials Hub</h3>
-               <button onClick={() => setMaterials([...materials, { title: 'New Handout', assetData: '' }])} className="bg-brand-600 text-white px-8 py-4 rounded-2xl font-black text-xs uppercase tracking-widest shadow-lg shadow-brand-100">Add Handout</button>
+               <button onClick={() => setMaterials([...materials, { id: Date.now().toString(), title: 'New Handout', type: 'pdf', completed: false, assetData: '' }])} className="bg-brand-600 text-white px-8 py-4 rounded-2xl font-black text-xs uppercase tracking-widest shadow-lg shadow-brand-100">Add Handout</button>
              </div>
              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                 {materials.map((m, i) => (

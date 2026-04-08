@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Menu, X, User as UserIcon, LogIn, PhoneCall, MessageCircle, LogOut, Globe } from 'lucide-react';
 import { NAV_LINKS } from '../constants';
-import { BrandingAssets, NavLink, UserRole } from '../types';
+import { BrandingAssets, NavLink, UserRole, GlobalLinks } from '../types';
 
 export const Logo = ({ className, src }: { className?: string, src?: string }) => (
   <div className={`flex flex-col items-center justify-center cursor-pointer group scale-95 md:scale-100 ${className || ''}`} onClick={() => window.location.hash = '/'}>
@@ -24,7 +24,7 @@ interface LayoutProps {
   userRole?: UserRole;
   onNavigate: (path: string) => void;
   currentPath: string;
-  links?: any;
+  links?: GlobalLinks;
   branding?: BrandingAssets;
 }
 
