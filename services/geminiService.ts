@@ -13,7 +13,7 @@ const getKeys = async () => {
     console.error('Error fetching API keys from Supabase:', error);
     return [];
   }
-  return data.map(row => row.key_value?.trim()).filter(k => k && k.length > 0);
+  return data.map((row: any) => row.key_value?.trim()).filter((k: string) => k && k.length > 0);
 };
 
 let currentKeyIndex = 0;

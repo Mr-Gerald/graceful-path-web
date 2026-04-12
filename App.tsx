@@ -99,7 +99,7 @@ function App() {
 
     initApp();
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event: string, session: any) => {
       if (event === 'PASSWORD_RECOVERY') {
         setIsResettingPassword(true);
         setCurrentPath('/login');
@@ -194,7 +194,7 @@ function App() {
         .order('created_at', { ascending: false });
         
       if (!error && data) {
-        const formattedReviews: Review[] = data.map(r => ({
+        const formattedReviews: Review[] = data.map((r: any) => ({
           id: r.id,
           name: ((r as any).profiles?.[0]?.name || (r as any).profiles?.name) || (r as any).name || 'Nursing Student',
           avatar: ((r as any).profiles?.[0]?.avatar || (r as any).profiles?.avatar) || (r as any).avatar || '',
@@ -224,7 +224,7 @@ function App() {
         .order('created_at', { ascending: false });
 
       if (!error && data) {
-        const formattedReviews: Review[] = data.map(r => ({
+        const formattedReviews: Review[] = data.map((r: any) => ({
           id: r.id,
           name: r.name || 'Nursing Student',
           avatar: r.avatar || '',
@@ -248,7 +248,7 @@ function App() {
         .limit(20);
 
       if (!error && data) {
-        const formattedReviews: Review[] = data.map(r => ({
+        const formattedReviews: Review[] = data.map((r: any) => ({
           id: r.id,
           name: 'Nursing Student',
           avatar: '',
@@ -285,9 +285,9 @@ function App() {
       .in('id', ['branding', 'links', 'exam_date']);
 
     if (essentials) {
-      const branding = essentials.find(d => d.id === 'branding')?.data;
-      const links = essentials.find(d => d.id === 'links')?.data;
-      const edate = essentials.find(d => d.id === 'exam_date')?.data;
+      const branding = essentials.find((d: any) => d.id === 'branding')?.data;
+      const links = essentials.find((d: any) => d.id === 'links')?.data;
+      const edate = essentials.find((d: any) => d.id === 'exam_date')?.data;
 
       if (branding) setBrandingAssets(branding);
       if (links) setGlobalLinks(links);
@@ -299,12 +299,12 @@ function App() {
       .from('site_config')
       .select('*')
       .in('id', ['course_content', 'practice_tests', 'materials', 'gemini_keys'])
-      .then(({ data: content }) => {
+      .then(({ data: content }: { data: any }) => {
         if (content) {
-          const course = content.find(d => d.id === 'course_content')?.data;
-          const tests = content.find(d => d.id === 'practice_tests')?.data;
-          const mats = content.find(d => d.id === 'materials')?.data;
-          const keys = content.find(d => d.id === 'gemini_keys')?.data;
+          const course = content.find((d: any) => d.id === 'course_content')?.data;
+          const tests = content.find((d: any) => d.id === 'practice_tests')?.data;
+          const mats = content.find((d: any) => d.id === 'materials')?.data;
+          const keys = content.find((d: any) => d.id === 'gemini_keys')?.data;
 
           if (course) setCourseContent(course);
           if (tests) setPracticeTests(tests);
@@ -929,7 +929,7 @@ function App() {
                     <div className="relative">
                       <div className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-400"><Globe className="w-4 h-4" /></div>
                       <select name="country" id="reg-country" autoComplete="country-name" value={registerInput.country} onChange={e => setRegisterInput({...registerInput, country: e.target.value})} className="w-full pl-12 pr-5 py-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none appearance-none font-bold text-sm text-slate-700">
-                        {COUNTRY_LIST.map(c => <option key={c} value={c}>{c}</option>)}
+                        {COUNTRY_LIST.map((c: string) => <option key={c} value={c}>{c}</option>)}
                       </select>
                     </div>
                     <input name="username" id="reg-username" autoComplete="username" type="text" placeholder="Username" className="w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none" value={registerInput.username} onChange={e => setRegisterInput({...registerInput, username: e.target.value})} required />

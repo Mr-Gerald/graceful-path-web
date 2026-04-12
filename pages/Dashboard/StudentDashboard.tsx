@@ -10,7 +10,7 @@ import {
 } from 'lucide-react';
 import { User, PracticeTest, QuizQuestion, Notification, Module, Lesson, NavLink, GlobalLinks } from '../../types';
 import { Logo } from '../../components/Layout';
-import StudyCalendar from '../../components/StudyCalendar';
+import StudyCalendar from '../../components/StudyCalender';
 import { supabase } from '../../services/supabaseClient';
 import { COUNTRY_LIST } from '../../constants';
 
@@ -955,7 +955,7 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
                     <div className="space-y-2">
                       <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Country of Residence</label>
                       <select value={editCountry} onChange={e => setEditCountry(e.target.value)} className="w-full p-4 bg-slate-50 border border-slate-100 rounded-xl outline-none focus:border-brand-500 transition font-bold text-sm">
-                        {COUNTRY_LIST.map(c => <option key={c} value={c}>{c}</option>)}
+                        {COUNTRY_LIST.map((c: string) => <option key={c} value={c}>{c}</option>)}
                       </select>
                     </div>
                   </div>
