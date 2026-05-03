@@ -191,47 +191,74 @@ function App() {
   };
 
   const fetchReviews = async () => {
-    // Attempt 1: Safe fetch with optional profile details
+    // Attempt 1: Full join with profiles and replies
     try {
       const { data, error } = await supabase
         .from('reviews')
-        .select('id, user_id, text, rating, role, likes, created_at')
+        .select('id, user_id, text, rating, role, likes, created_at, profiles(name, avatar), review_replies(id, name, text, created_at)')
         .order('created_at', { ascending: false });
         
       if (!error && data) {
         const formattedReviews: Review[] = data.map((r: any) => ({
           id: r.id,
-          name: r.name || 'Nursing Student',
-          avatar: r.avatar || '',
-          text: r.text || '',
-          rating: Number(r.rating) || 5,
-          role: r.role || 'Nursing Student',
-          likes: Number(r.likes) || 0,
-          replies: [],
-          createdAt: r.created_at ? new Date(r.created_at) : new Date()
+          name: ((r as any).profiles?.[0]?.name || (r as any).profiles?.name) || (r as any).name || 'Nursing Student',
+          avatar: ((r as any).profiles?.[0]?.avatar || (r as any).profiles?.avatar) || (r as any).avatar || '',
+          text: r.text,
+          rating: r.rating,
+          role: r.role,
+          likes: r.likes || 0,
+          replies: (r.review_replies || []).map((rp: any) => ({
+            id: rp.id,
+            name: rp.name,
+            avatar: '',
+            text: rp.text,
+            createdAt: new Date(rp.created_at)
+          })),
+          createdAt: new Date(r.created_at)
         }));
         setReviews(formattedReviews);
         return;
       }
-      if (error) console.warn("Primary review fetch error:", error);
-    } catch (e) { 
-      console.warn("Attempt 1 failed:", e); 
-    }
+    } catch (e) { console.warn("Attempt 1 failed:", e); }
 
-    // Attempt 2: Minimal fallback
+    // Attempt 2: Simple fetch without joins
     try {
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from('reviews')
-        .select('id, text, rating')
-        .limit(10);
+        .select('*')
+        .order('created_at', { ascending: false });
 
-      if (data && Array.isArray(data)) {
+      if (!error && data) {
         const formattedReviews: Review[] = data.map((r: any) => ({
           id: r.id,
-          name: 'Anonymous',
+          name: r.name || 'Nursing Student',
+          avatar: r.avatar || '',
+          text: r.text,
+          rating: r.rating,
+          role: r.role,
+          likes: r.likes || 0,
+          replies: [],
+          createdAt: new Date(r.created_at)
+        }));
+        setReviews(formattedReviews);
+        return;
+      }
+    } catch (e) { console.warn("Attempt 2 failed:", e); }
+
+    // Attempt 3: Minimal fetch
+    try {
+      const { data, error } = await supabase
+        .from('reviews')
+        .select('id, text, rating')
+        .limit(20);
+
+      if (!error && data) {
+        const formattedReviews: Review[] = data.map((r: any) => ({
+          id: r.id,
+          name: 'Nursing Student',
           avatar: '',
-          text: r.text || '',
-          rating: Number(r.rating) || 5,
+          text: r.text,
+          rating: r.rating,
           role: 'Nursing Student',
           likes: 0,
           replies: [],
@@ -239,9 +266,7 @@ function App() {
         }));
         setReviews(formattedReviews);
       }
-    } catch (e) { 
-      console.error("All review fetch attempts failed:", e); 
-    }
+    } catch (e) { console.error("All fetch attempts failed:", e); }
   };
 
   const handleDeleteReview = async (id: string) => {
@@ -275,9 +300,7 @@ function App() {
         if (branding && typeof branding === 'object') {
           setBrandingAssets(prev => ({ 
             ...prev, 
-            ...branding,
-            favicon: branding.favicon || prev.favicon,
-            logo: branding.logo || prev.logo
+            ...branding
           }));
         }
         if (links && typeof links === 'object') {

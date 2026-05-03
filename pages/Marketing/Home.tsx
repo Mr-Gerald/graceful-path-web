@@ -44,7 +44,7 @@ const ReviewCard = ({ review }: { review: Review }) => {
           )}
         </div>
         <div>
-          <h3 className="font-bold text-slate-900">{review.name || 'Anonymous Student'}</h3>
+          <h3 className="font-bold text-slate-900">{review.name || 'Nursing Student'}</h3>
           <p className="text-[10px] font-black uppercase text-brand-500 tracking-widest">{review.role || 'Nursing Student'}</p>
         </div>
       </div>
@@ -151,7 +151,13 @@ export const Home: React.FC<HomeProps> = ({
                  <div className="flex -space-x-3">
                     {reviews.slice(0, 5).map((r, i) => (
                       <div key={i} className="w-10 h-10 rounded-full border-2 border-white bg-slate-200 overflow-hidden shadow-sm">
-                        {r.avatar ? <img src={r.avatar} alt="" className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center bg-brand-100 text-brand-600 text-[10px] font-black">{r.name.charAt(0)}</div>}
+                        {r.avatar ? (
+                          <img src={r.avatar} alt="" className="w-full h-full object-cover" />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center bg-brand-100 text-brand-600 text-[10px] font-black">
+                            {(r.name || 'S').charAt(0)}
+                          </div>
+                        )}
                       </div>
                     ))}
                  </div>
