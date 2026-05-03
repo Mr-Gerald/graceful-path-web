@@ -278,45 +278,58 @@ function App() {
   };
 
   const fetchSiteConfig = async () => {
-    // 1. Fetch essential config first (small data)
-    const { data: essentials } = await supabase
-      .from('site_config')
-      .select('*')
-      .in('id', ['branding', 'links', 'exam_date']);
+    try {
+      // 1. Fetch essential config first (small data)
+      const { data: essentials, error: essError } = await supabase
+        .from('site_config')
+        .select('*')
+        .in('id', ['branding', 'links', 'exam_date']);
 
-    if (essentials) {
-      const branding = essentials.find((d: any) => d.id === 'branding')?.data;
-      const links = essentials.find((d: any) => d.id === 'links')?.data;
-      const edate = essentials.find((d: any) => d.id === 'exam_date')?.data;
+      if (essError) throw essError;
 
-      if (branding) setBrandingAssets(branding);
-      if (links) setGlobalLinks(links);
-      if (edate) setExamDate(edate.date);
-    }
+      if (essentials) {
+        const branding = essentials.find((d: any) => d.id === 'branding')?.data;
+        const links = essentials.find((d: any) => d.id === 'links')?.data;
+        const edate = essentials.find((d: any) => d.id === 'exam_date')?.data;
 
-    // 2. Fetch heavier content in background
-    supabase
-      .from('site_config')
-      .select('*')
-      .in('id', ['course_content', 'practice_tests', 'materials', 'gemini_keys'])
-      .then(({ data: content }: { data: any }) => {
-        if (content) {
-          const course = content.find((d: any) => d.id === 'course_content')?.data;
-          const tests = content.find((d: any) => d.id === 'practice_tests')?.data;
-          const mats = content.find((d: any) => d.id === 'materials')?.data;
-          const keys = content.find((d: any) => d.id === 'gemini_keys')?.data;
+        if (branding && typeof branding === 'object') setBrandingAssets(prev => ({ ...prev, ...branding }));
+        if (links) setGlobalLinks(links);
+        if (edate) setExamDate(edate.date || 'April 25, 2026');
+      }
 
-          if (course) setCourseContent(course);
-          if (tests) setPracticeTests(tests);
-          if (mats) setMaterials(mats);
-          if (keys) {
-            const kList = keys.keys || [];
-            setGeminiKeys(kList);
-            geminiService.setKeys(kList);
+      // 2. Fetch heavier content in background
+      (async () => {
+        try {
+          const { data: content } = await supabase
+            .from('site_config')
+            .select('*')
+            .in('id', ['course_content', 'practice_tests', 'materials', 'gemini_keys']);
+
+          if (content) {
+            const course = content.find((d: any) => d.id === 'course_content')?.data;
+            const tests = content.find((d: any) => d.id === 'practice_tests')?.data;
+            const mats = content.find((d: any) => d.id === 'materials')?.data;
+            const keys = content.find((d: any) => d.id === 'gemini_keys')?.data;
+
+            if (course) setCourseContent(course);
+            if (tests) setPracticeTests(tests);
+            if (mats) setMaterials(mats);
+            if (keys) {
+              const kList = keys.keys || [];
+              setGeminiKeys(kList);
+              geminiService.setKeys(kList);
+            }
           }
+        } catch (err) {
+          console.error("Secondary config load failed:", err);
+        } finally {
+          setHasLoadedInitialData(true);
         }
-        setHasLoadedInitialData(true);
-      });
+      })();
+    } catch (err) {
+      console.error("Site config load failed:", err);
+      setHasLoadedInitialData(true); // Don't block UI forever
+    }
   };
 
   const latestConfig = React.useRef({

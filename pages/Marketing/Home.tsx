@@ -21,11 +21,15 @@ const ReviewCard = ({ review }: { review: Review }) => {
 
   React.useEffect(() => {
     if (textRef.current) {
-      // Check if text exceeds roughly 6 lines (approx 24px per line * 6 = 144px)
-      // or use line count if possible. Line-clamp-6 is approx 150px depending on font.
-      const lineHeight = parseInt(getComputedStyle(textRef.current).lineHeight);
-      const lines = textRef.current.scrollHeight / lineHeight;
-      setIsLong(lines > 6.5);
+      const style = getComputedStyle(textRef.current);
+      const lineHeight = parseInt(style.lineHeight);
+      if (!isNaN(lineHeight) && lineHeight > 0) {
+        const lines = textRef.current.scrollHeight / lineHeight;
+        setIsLong(lines > 6.5);
+      } else {
+        // Fallback check if lineHeight is 'normal'
+        setIsLong(textRef.current.scrollHeight > 156); // approx 6 lines * 26px
+      }
     }
   }, [review.text]);
 
@@ -33,11 +37,15 @@ const ReviewCard = ({ review }: { review: Review }) => {
     <div className="p-8 bg-slate-50 rounded-[2.5rem] border border-slate-100 flex flex-col h-full shadow-sm hover:shadow-md transition-all duration-500">
       <div className="flex items-center gap-4 mb-6">
         <div className="w-14 h-14 rounded-2xl bg-brand-100 text-brand-600 flex items-center justify-center font-black shadow-sm overflow-hidden flex-shrink-0">
-          {review.avatar ? <img src={review.avatar} alt={review.name} className="w-full h-full object-cover" /> : review.name.charAt(0)}
+          {review.avatar ? (
+            <img src={review.avatar} alt={review.name || 'Student'} className="w-full h-full object-cover" />
+          ) : (
+            (review.name || 'S').charAt(0)
+          )}
         </div>
         <div>
-          <h3 className="font-bold text-slate-900">{review.name}</h3>
-          <p className="text-[10px] font-black uppercase text-brand-500 tracking-widest">{review.role}</p>
+          <h3 className="font-bold text-slate-900">{review.name || 'Anonymous Student'}</h3>
+          <p className="text-[10px] font-black uppercase text-brand-500 tracking-widest">{review.role || 'Nursing Student'}</p>
         </div>
       </div>
       <div className="flex-grow">

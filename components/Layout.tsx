@@ -6,9 +6,13 @@ import { BrandingAssets, NavLink, UserRole, GlobalLinks } from '../types';
 export const Logo = ({ className, src }: { className?: string, src?: string }) => (
   <div className={`flex flex-col items-center cursor-pointer group scale-95 md:scale-100 ${className || ''}`} onClick={() => window.location.hash = '/'}>
     <img 
-      src={src || "https://scontent.flos2-2.fna.fbcdn.net/v/t1.15752-9/637892089_1852437922090798_1493900335337598158_n.jpg?stp=dst-jpg_s526x395_tt6&_nc_cat=102&ccb=1-7&_nc_sid=0024fc&_nc_ohc=b1FTwJ_5q4EQ7kNvwFsu0hY&_nc_oc=AdqmhYG7spDywp5UGpKAzAC-cGJpjAf81RTpVE6krgfuV2iuSChRPMr2bbJOUpLfMbI&_nc_ad=z-m&_nc_cid=1361&_nc_zt=23&_nc_ht=scontent.flos2-2.fna&_nc_ss=7a32e&oh=03_Q7cD5AEmwUAvgzy2x3DpP6l2yEKSAlCRRLAqHH4fGy7JYgBH4Q&oe=69F9BE37"} 
+      src={src || "https://images.unsplash.com/photo-1594824476967-48c8b964273f?auto=format&fit=crop&q=80&w=100"} 
       alt="Graceful Path Logo" 
-      className="h-9 w-auto mb-0.5 transform group-hover:scale-110 transition duration-500" 
+      className="h-9 w-auto mb-0.5 transform group-hover:scale-110 transition duration-500 rounded-lg" 
+      onError={(e) => {
+        const target = e.target as HTMLImageElement;
+        target.src = "https://ui-avatars.com/api/?name=GP&background=0284c7&color=fff";
+      }}
     />
     <h1 className="text-lg font-black text-[#0c4a6e] tracking-tight leading-none text-nowrap">Graceful path</h1>
     <div className="flex items-center w-full mt-1 px-0.5">
