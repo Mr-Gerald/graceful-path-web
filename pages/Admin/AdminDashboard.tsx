@@ -37,6 +37,7 @@ interface AdminDashboardProps {
   onSave?: () => Promise<void>;
   reviews: Review[];
   onDeleteReview: (id: string) => Promise<void>;
+  onRefreshReviews?: () => Promise<void>;
 }
 
 const FileUploadButton: React.FC<{ 
@@ -82,7 +83,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   courseContent, setCourseContent, practiceTests, setPracticeTests, 
   materials, setMaterials, globalLinks, setGlobalLinks, branding, setBranding, examDate, setExamDate,
 
-  reviews, onDeleteReview, isSaving, onSave
+  reviews, onDeleteReview, onRefreshReviews, isSaving, onSave
 }) => {
   const [activeTab, setActiveTab] = useState('Overview');
   const [showNotifyModal, setShowNotifyModal] = useState(false);
@@ -138,6 +139,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   const adminLinks = [
     { label: 'Overview', icon: <LayoutDashboard className="w-5 h-5" /> },
     { label: 'Students', icon: <Users className="w-5 h-5" /> },
+    { label: 'Branding', icon: <Image className="w-5 h-5" /> },
     { label: 'Reviews', icon: <Star className="w-5 h-5" /> },
     { label: 'Courses', icon: <BookOpen className="w-5 h-5" /> },
     { label: 'Assessments', icon: <Calendar className="w-5 h-5" /> },
@@ -250,6 +252,54 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
       alert("Failed to generate questions. Please check your API keys and connection.");
     } finally {
       setIsGeneratingAI(false);
+    }
+  };
+
+  const [editingReview, setEditingReview] = useState<Review | null>(null);
+  const [showReviewModal, setShowReviewModal] = useState(false);
+  const [reviewInput, setReviewInput] = useState<Partial<Review>>({ name: '', text: '', rating: 5, role: 'Nursing Student' });
+
+  const handleAddReview = async () => {
+    if (!reviewInput.name || !reviewInput.text) return;
+    setProcessingId('add-review');
+    try {
+      if (editingReview) {
+        const { error } = await supabase.from('reviews').update({
+          name: reviewInput.name,
+          text: reviewInput.text,
+          rating: reviewInput.rating,
+          role: reviewInput.role,
+          avatar: reviewInput.avatar
+        }).eq('id', editingReview.id);
+        if (error) throw error;
+      } else {
+        const { error } = await supabase.from('reviews').insert({
+          name: reviewInput.name,
+          text: reviewInput.text,
+          rating: reviewInput.rating,
+          role: reviewInput.role,
+          avatar: reviewInput.avatar
+        });
+        if (error) throw error;
+      }
+      
+      // Refresh reviews after operation (normally App.tsx would handle this if we were using a real-time listener, 
+      // but here we might need to manually trigger a refresh or let the auto-refresh handle it)
+      // Since fetchReviews is in App.tsx, we'll assume it will hit on 다음 load or we can refresh the page.
+      // But for better UX, we should probably have an onRefreshReviews prop.
+      if (onRefreshReviews) {
+        await onRefreshReviews();
+      } else {
+        window.location.reload(); 
+      }
+      setSuccessMessage(editingReview ? 'Review updated!' : 'Review added!');
+      setShowReviewModal(false);
+      setEditingReview(null);
+    } catch (err) {
+      console.error(err);
+      alert('Failed to save review');
+    } finally {
+      setProcessingId(null);
     }
   };
 
@@ -383,63 +433,212 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
             </div>
           </div>
         );
+      case 'Branding':
+        return (
+          <div className="space-y-12 animate-in fade-in duration-500 pb-20">
+            <div className="bg-white p-10 rounded-[3rem] border border-slate-100 shadow-sm">
+              <div className="flex items-center gap-6 mb-12">
+                <div className="w-16 h-16 bg-brand-50 text-brand-600 rounded-3xl flex items-center justify-center shadow-sm">
+                  <Image className="w-8 h-8" />
+                </div>
+                <div>
+                  <h3 className="text-3xl font-serif font-black text-slate-900 mb-1">Visual Identity</h3>
+                  <p className="text-slate-400 font-bold uppercase tracking-[0.2em] text-[10px]">Customize your academy branding</p>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <ImageInputGroup label="Website Logo (Top Nav)" value={branding.logo || ''} field="logo" />
+                <ImageInputGroup label="Website Favicon (Browser Tab)" value={branding.favicon || ''} field="favicon" />
+              </div>
+            </div>
+
+            <div className="bg-white p-10 rounded-[3rem] border border-slate-100 shadow-sm">
+               <div className="flex items-center gap-6 mb-12">
+                <div className="w-16 h-16 bg-slate-900 text-white rounded-3xl flex items-center justify-center shadow-sm">
+                  <Sparkles className="w-8 h-8" />
+                </div>
+                <div>
+                  <h3 className="text-3xl font-serif font-black text-slate-900 mb-1">Landing Page Media</h3>
+                  <p className="text-slate-400 font-bold uppercase tracking-[0.2em] text-[10px]">Optimize visual engagement</p>
+                </div>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <ImageInputGroup label="Main Hero Image" value={branding.heroImage} field="heroImage" />
+                <ImageInputGroup label="Founder Biography Image" value={branding.founderImage} field="founderImage" />
+                <ImageInputGroup label="Expert Mentor Image" value={branding.tutorImage} field="tutorImage" />
+                <ImageInputGroup label="Who We Are Section" value={branding.aboutImage} field="aboutImage" />
+                <ImageInputGroup label="Success Goal Illustration" value={branding.spotlightImage} field="spotlightImage" />
+              </div>
+            </div>
+          </div>
+        );
       case 'Reviews':
         return (
-          <div className="bg-white rounded-[2.5rem] border border-gray-100 overflow-hidden shadow-sm animate-in fade-in duration-500">
-             <div className="overflow-x-auto w-full">
-               <table className="w-full text-sm border-collapse">
-                 <thead className="bg-slate-50 border-b border-gray-100">
-                   <tr>
-                     <th className="px-8 py-5 text-left text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Reviewer</th>
-                     <th className="px-8 py-5 text-left text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Rating</th>
-                     <th className="px-8 py-5 text-left text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Content</th>
-                     <th className="px-8 py-5 text-right text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Actions</th>
-                   </tr>
-                 </thead>
-                 <tbody className="divide-y divide-slate-50">
-                   {reviews.length === 0 ? (
-                     <tr><td colSpan={4} className="px-8 py-20 text-center text-slate-400 font-bold italic">No academy reviews yet.</td></tr>
-                   ) : (
-                     reviews.map(r => (
-                       <tr key={r.id} className="hover:bg-slate-50 transition group">
-                         <td className="px-8 py-5">
-                            <div className="flex items-center">
-                              <div className="w-10 h-10 rounded-xl bg-brand-100 text-brand-600 flex items-center justify-center font-black mr-4 shadow-sm flex-shrink-0">
-                                  {r.avatar ? <img src={r.avatar} className="w-full h-full rounded-xl object-cover" /> : r.name.charAt(0)}
-                              </div>
-                              <div>
-                                <p className="font-bold text-slate-900">{r.name}</p>
-                                <p className="text-[10px] font-black uppercase text-brand-500">{r.role}</p>
-                              </div>
+          <div className="animate-in fade-in duration-500">
+            <div className="flex items-center justify-between mb-8 bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm">
+              <div>
+                <h3 className="text-2xl font-serif font-bold text-slate-900 uppercase">Student Reviews</h3>
+                <p className="text-slate-400 font-bold uppercase tracking-widest text-[10px]">{reviews.length} Total Reviews</p>
+              </div>
+              <button 
+                onClick={() => {
+                  setReviewInput({ name: '', text: '', rating: 5, role: 'Nursing Student' });
+                  setEditingReview(null);
+                  setShowReviewModal(true);
+                }}
+                className="bg-brand-600 text-white px-8 py-4 rounded-2xl font-black text-xs uppercase tracking-widest shadow-lg shadow-brand-100 flex items-center gap-2"
+              >
+                <Plus className="w-4 h-4" /> Add Review
+              </button>
+            </div>
+
+            <div className="bg-white rounded-[2.5rem] border border-gray-100 overflow-hidden shadow-sm">
+              <div className="overflow-x-auto w-full">
+                <table className="w-full text-sm border-collapse">
+                  <thead className="bg-slate-50 border-b border-gray-100">
+                    <tr>
+                      <th className="px-8 py-5 text-left text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Reviewer</th>
+                      <th className="px-8 py-5 text-left text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Rating</th>
+                      <th className="px-8 py-5 text-left text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Content</th>
+                      <th className="px-8 py-5 text-right text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-50">
+                    {reviews.length === 0 ? (
+                      <tr><td colSpan={4} className="px-8 py-20 text-center text-slate-400 font-bold italic">No academy reviews yet.</td></tr>
+                    ) : (
+                      reviews.map(r => (
+                        <tr key={r.id} className="hover:bg-slate-50 transition group">
+                          <td className="px-8 py-5">
+                             <div className="flex items-center">
+                               <div className="w-10 h-10 rounded-xl bg-brand-100 text-brand-600 flex items-center justify-center font-black mr-4 shadow-sm flex-shrink-0">
+                                   {r.avatar ? <img src={r.avatar} className="w-full h-full rounded-xl object-cover" /> : r.name.charAt(0)}
+                               </div>
+                               <div>
+                                 <p className="font-bold text-slate-900">{r.name}</p>
+                                 <p className="text-[10px] font-black uppercase text-brand-500">{r.role}</p>
+                               </div>
+                             </div>
+                          </td>
+                          <td className="px-8 py-5">
+                             <div className="flex items-center text-yellow-400">
+                                {[...Array(5)].map((_, i) => <Star key={i} className={`w-3 h-3 ${i < r.rating ? 'fill-current' : 'opacity-20'}`} />)}
+                             </div>
+                          </td>
+                          <td className="px-8 py-5">
+                             <p className="text-slate-600 font-medium max-w-md line-clamp-2 italic">"{r.text}"</p>
+                          </td>
+                          <td className="px-8 py-5 text-right">
+                            <div className="flex items-center justify-end gap-2">
+                              <button 
+                                onClick={() => {
+                                  setReviewInput(r);
+                                  setEditingReview(r);
+                                  setShowReviewModal(true);
+                                }}
+                                className="p-3 text-slate-300 hover:text-brand-600 transition hover:bg-brand-50 rounded-xl"
+                              >
+                                <Edit2 className="w-5 h-5" />
+                              </button>
+                              <button 
+                                disabled={processingId === r.id}
+                                onClick={() => {
+                                  if (confirm('Are you sure you want to delete this review?')) {
+                                    handleAction(r.id, () => onDeleteReview(r.id), 'Review deleted successfully');
+                                  }
+                                }} 
+                                className="p-3 text-slate-300 hover:text-red-500 transition hover:bg-red-50 rounded-xl disabled:opacity-50"
+                              >
+                                {processingId === r.id ? <Zap className="w-5 h-5 animate-pulse" /> : <Trash2 className="w-5 h-5" />}
+                              </button>
                             </div>
-                         </td>
-                         <td className="px-8 py-5">
-                            <div className="flex items-center text-yellow-400">
-                               {[...Array(5)].map((_, i) => <Star key={i} className={`w-3 h-3 ${i < r.rating ? 'fill-current' : 'opacity-20'}`} />)}
-                            </div>
-                         </td>
-                         <td className="px-8 py-5">
-                            <p className="text-slate-600 font-medium max-w-md line-clamp-2 italic">"{r.text}"</p>
-                         </td>
-                         <td className="px-8 py-5 text-right">
-                           <button 
-                             disabled={processingId === r.id}
-                             onClick={() => {
-                               if (confirm('Are you sure you want to delete this review?')) {
-                                 handleAction(r.id, () => onDeleteReview(r.id), 'Review deleted successfully');
-                               }
-                             }} 
-                             className="p-3 text-slate-300 hover:text-red-500 transition hover:bg-red-50 rounded-xl disabled:opacity-50"
-                           >
-                             {processingId === r.id ? <Zap className="w-5 h-5 animate-pulse" /> : <Trash2 className="w-5 h-5" />}
-                           </button>
-                         </td>
-                       </tr>
-                     ))
-                   )}
-                 </tbody>
-               </table>
-             </div>
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            {/* Review Add/Edit Modal */}
+            {showReviewModal && (
+              <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-300">
+                <div className="bg-white w-full max-w-xl rounded-[3rem] p-10 shadow-2xl relative overflow-hidden animate-in zoom-in-95 duration-300">
+                  <button onClick={() => setShowReviewModal(false)} className="absolute top-8 right-8 p-2 hover:bg-slate-100 rounded-xl transition"><X className="w-6 h-6 text-slate-400" /></button>
+                  
+                  <div className="mb-8">
+                    <h3 className="text-2xl font-serif font-bold text-slate-900">{editingReview ? 'Edit Student Review' : 'Add New Review'}</h3>
+                    <p className="text-slate-400 font-bold uppercase tracking-widest text-[10px] mt-1">Showcase student success stories</p>
+                  </div>
+
+                  <div className="space-y-6">
+                    <div>
+                      <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 block mb-2 px-1">Student Name</label>
+                      <input 
+                        value={reviewInput.name} 
+                        onChange={e => setReviewInput({...reviewInput, name: e.target.value})}
+                        className="w-full bg-slate-50 p-4 rounded-2xl border border-slate-100 outline-none focus:ring-2 focus:ring-brand-500/20 font-bold text-slate-900" 
+                        placeholder="e.g. Sarah Williams"
+                      />
+                    </div>
+                    
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 block mb-2 px-1">Role / Subtitle</label>
+                        <input 
+                          value={reviewInput.role} 
+                          onChange={e => setReviewInput({...reviewInput, role: e.target.value})}
+                          className="w-full bg-slate-50 p-4 rounded-2xl border border-slate-100 outline-none focus:ring-2 focus:ring-brand-500/20 font-bold text-slate-900" 
+                          placeholder="e.g. NCLEX Passer"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 block mb-2 px-1">Rating (1-5)</label>
+                        <select 
+                          value={reviewInput.rating} 
+                          onChange={e => setReviewInput({...reviewInput, rating: parseInt(e.target.value)})}
+                          className="w-full bg-slate-50 p-4 rounded-2xl border border-slate-100 outline-none focus:ring-2 focus:ring-brand-500/20 font-bold text-slate-900"
+                        >
+                          {[1,2,3,4,5].map(n => <option key={n} value={n}>{n} Stars</option>)}
+                        </select>
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 block mb-2 px-1">Review Message</label>
+                      <textarea 
+                        value={reviewInput.text} 
+                        onChange={e => setReviewInput({...reviewInput, text: e.target.value})}
+                        rows={5}
+                        className="w-full bg-slate-50 p-4 rounded-2xl border border-slate-100 outline-none focus:ring-2 focus:ring-brand-500/20 font-medium text-slate-700 resize-none italic" 
+                        placeholder="Paste the student's review message here..."
+                      />
+                    </div>
+
+                    <div>
+                      <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 block mb-2 px-1">Student Photo URL (Optional)</label>
+                      <input 
+                        value={reviewInput.avatar} 
+                        onChange={e => setReviewInput({...reviewInput, avatar: e.target.value})}
+                        className="w-full bg-slate-50 p-4 rounded-2xl border border-slate-100 outline-none focus:ring-2 focus:ring-brand-500/20 font-mono text-xs text-slate-500" 
+                        placeholder="https://..."
+                      />
+                    </div>
+
+                    <button 
+                      onClick={handleAddReview}
+                      disabled={processingId === 'add-review'}
+                      className="w-full bg-brand-600 text-white py-5 rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl shadow-brand-100 hover:bg-brand-700 transition transform hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50"
+                    >
+                      {processingId === 'add-review' ? 'Processing...' : (editingReview ? 'Update Review' : 'Publish Review')}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         );
       case 'Global Settings':

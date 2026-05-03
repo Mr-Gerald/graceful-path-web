@@ -11,7 +11,7 @@ import { geminiService } from './services/geminiService';
 import { Mail, CheckCircle2, Globe, LogOut } from 'lucide-react';
 
 function App() {
-  const [currentPath, setCurrentPath] = useState<string>(window.location.hash.replace('#', '') || '/');
+  const [currentPath, setCurrentPath] = useState<string>((window.location as any).hash.replace('#', '') || '/');
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [allStudents, setAllStudents] = useState<User[]>([]);
   const [reviews, setReviews] = useState<Review[]>([]);
@@ -798,6 +798,7 @@ function App() {
             setExamDate={setExamDate} 
             isSaving={isSaving} 
             onSave={saveSiteConfig} 
+            onRefreshReviews={fetchReviews}
           />
         ) : <Home onNavigate={navigate} reviews={reviews} links={globalLinks} branding={brandingAssets} onLike={handleLikeReview} onReply={handleReplyReview} onAddReview={addReview} userLikes={userLikes} currentUser={currentUser} />;
       case '/login':
