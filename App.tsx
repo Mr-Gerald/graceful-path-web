@@ -195,15 +195,7 @@ function App() {
     try {
       const { data, error } = await supabase
         .from('reviews')
-        .select(`
-          id, 
-          user_id, 
-          text, 
-          rating, 
-          role, 
-          likes, 
-          created_at
-        `)
+        .select('id, user_id, text, rating, role, likes, created_at')
         .order('created_at', { ascending: false });
         
       if (!error && data) {
@@ -211,18 +203,20 @@ function App() {
           id: r.id,
           name: r.name || 'Nursing Student',
           avatar: r.avatar || '',
-          text: r.text,
-          rating: r.rating,
+          text: r.text || '',
+          rating: Number(r.rating) || 5,
           role: r.role || 'Nursing Student',
-          likes: r.likes || 0,
+          likes: Number(r.likes) || 0,
           replies: [],
-          createdAt: new Date(r.created_at)
+          createdAt: r.created_at ? new Date(r.created_at) : new Date()
         }));
         setReviews(formattedReviews);
         return;
       }
       if (error) console.warn("Primary review fetch error:", error);
-    } catch (e) { console.warn("Attempt 1 failed:", e); }
+    } catch (e) { 
+      console.warn("Attempt 1 failed:", e); 
+    }
 
     // Attempt 2: Minimal fallback
     try {
@@ -231,13 +225,13 @@ function App() {
         .select('id, text, rating')
         .limit(10);
 
-      if (data) {
+      if (data && Array.isArray(data)) {
         const formattedReviews: Review[] = data.map((r: any) => ({
           id: r.id,
           name: 'Anonymous',
           avatar: '',
           text: r.text || '',
-          rating: r.rating || 5,
+          rating: Number(r.rating) || 5,
           role: 'Nursing Student',
           likes: 0,
           replies: [],
@@ -245,7 +239,9 @@ function App() {
         }));
         setReviews(formattedReviews);
       }
-    } catch (e) { console.error("All review fetch attempts failed:", e); }
+    } catch (e) { 
+      console.error("All review fetch attempts failed:", e); 
+    }
   };
 
   const handleDeleteReview = async (id: string) => {
@@ -276,9 +272,20 @@ function App() {
         const links = essentials.find((d: any) => d.id === 'links')?.data;
         const edate = essentials.find((d: any) => d.id === 'exam_date')?.data;
 
-        if (branding && typeof branding === 'object') setBrandingAssets(prev => ({ ...prev, ...branding }));
-        if (links) setGlobalLinks(links);
-        if (edate) setExamDate(edate.date || 'April 25, 2026');
+        if (branding && typeof branding === 'object') {
+          setBrandingAssets(prev => ({ 
+            ...prev, 
+            ...branding,
+            favicon: branding.favicon || prev.favicon,
+            logo: branding.logo || prev.logo
+          }));
+        }
+        if (links && typeof links === 'object') {
+          setGlobalLinks(prev => ({ ...prev, ...links }));
+        }
+        if (edate && edate.date) {
+          setExamDate(edate.date);
+        }
       }
 
       // 2. Fetch heavier content in background
@@ -704,17 +711,6 @@ function App() {
     setError(''); // Clear error on navigation
   };
 
-  if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-white">
-        <div className="flex flex-col items-center">
-          <div className="w-16 h-16 border-4 border-brand-200 border-t-brand-600 rounded-full animate-spin"></div>
-          <p className="mt-6 font-black text-[10px] uppercase tracking-[0.3em] text-slate-400">Loading Academy...</p>
-        </div>
-      </div>
-    );
-  }
-
   const handleForgotPassword = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
@@ -757,6 +753,17 @@ function App() {
       }
     }
   }, [brandingAssets.favicon]);
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-white">
+        <div className="flex flex-col items-center">
+          <div className="w-16 h-16 border-4 border-brand-200 border-t-brand-600 rounded-full animate-spin"></div>
+          <p className="mt-6 font-black text-[10px] uppercase tracking-[0.3em] text-slate-400">Loading Academy...</p>
+        </div>
+      </div>
+    );
+  }
 
   const renderContent = () => {
     switch (currentPath) {

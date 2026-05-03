@@ -11,7 +11,10 @@ export const Logo = ({ className, src }: { className?: string, src?: string }) =
       className="h-9 w-auto mb-0.5 transform group-hover:scale-110 transition duration-500 rounded-lg" 
       onError={(e) => {
         const target = e.target as HTMLImageElement;
-        target.src = "https://ui-avatars.com/api/?name=GP&background=0284c7&color=fff";
+        const fallback = "https://ui-avatars.com/api/?name=GP&background=0284c7&color=fff";
+        if (target.src !== fallback) {
+          target.src = fallback;
+        }
       }}
     />
     <h1 className="text-lg font-black text-[#0c4a6e] tracking-tight leading-none text-nowrap">Graceful path</h1>
