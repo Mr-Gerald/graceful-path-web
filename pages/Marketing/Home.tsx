@@ -1,4 +1,3 @@
-@@ -1,810 +1,87 @@
 import React, { useState, useRef } from 'react';
 import { 
   CheckCircle2, 
@@ -34,15 +33,12 @@ import {
   Calendar
 } from 'lucide-react';
 import { COURSES } from '../../constants';
-import { Review, BrandingAssets, User } from '../../types';
+import { Review, BrandingAssets, User, GlobalLinks } from '../../types';
 import { Logo } from '../../components/Layout';
-import React from 'react';
-import { User, Review, BrandingAssets, GlobalLinks } from '../../types';
 
 interface HomeProps {
   onNavigate: (path: string) => void;
   reviews: Review[];
-  links?: any;
   links: GlobalLinks;
   branding: BrandingAssets;
   onLike: (id: string) => void;
@@ -92,7 +88,17 @@ const ReviewReplyInput: React.FC<{ reviewId: string; reviewerName: string; onRep
   );
 };
 
-export const Home: React.FC<HomeProps> = ({ onNavigate, reviews, links, branding, onLike, onReply, onAddReview, userLikes, currentUser }) => {
+export const Home: React.FC<HomeProps> = ({ 
+  onNavigate, 
+  reviews, 
+  links, 
+  branding, 
+  onLike, 
+  onReply, 
+  onAddReview, 
+  userLikes, 
+  currentUser 
+}) => {
   const [openFaq, setOpenFaq] = useState<number | null>(null);
   const [showChatOptions, setShowChatOptions] = useState(false);
   const [showChannelOptions, setShowChannelOptions] = useState(false);
@@ -222,17 +228,6 @@ export const Home: React.FC<HomeProps> = ({ onNavigate, reviews, links, branding
     </div>
   );
 
-export const Home: React.FC<HomeProps> = ({ 
-  onNavigate, 
-  reviews, 
-  links, 
-  branding, 
-  onLike, 
-  onReply, 
-  onAddReview, 
-  userLikes, 
-  currentUser 
-}) => {
   return (
     <div className="bg-white">
       {showChatOptions && (
@@ -240,8 +235,8 @@ export const Home: React.FC<HomeProps> = ({
           title="Connect With Us"
           onClose={() => setShowChatOptions(false)}
           options={[
-            { label: 'WhatsApp Messenger', link: links?.whatsapp || 'https://wa.me/447470539081', icon: <MessageCircle className="w-5 h-5" />, color: 'bg-green-500' },
-            { label: 'Telegram Hub', link: links?.telegram || 'https://t.me/+r0sIS5RfnuFhYmFk', icon: <Globe className="w-5 h-5" />, color: 'bg-[#0ea5e9]' }
+            { label: 'WhatsApp Messenger', link: links.whatsapp || 'https://wa.me/447470539081', icon: <MessageCircle className="w-5 h-5" />, color: 'bg-green-500' },
+            { label: 'Telegram Hub', link: links.telegram || 'https://t.me/+r0sIS5RfnuFhYmFk', icon: <Globe className="w-5 h-5" />, color: 'bg-[#0ea5e9]' }
           ]}
         />
       )}
@@ -251,8 +246,8 @@ export const Home: React.FC<HomeProps> = ({
           title="Join Community"
           onClose={() => setShowChannelOptions(false)}
           options={[
-            { label: 'WhatsApp Group', link: links?.whatsappAcademyGroup || 'https://chat.whatsapp.com/JpfoDTxUBSRCmXUu597Y44?mode=gi_t', icon: <MessageCircle className="w-5 h-5" />, color: 'bg-green-600' },
-            { label: 'Telegram Channel', link: links?.telegramAcademyHub || 'https://t.me/+r0sIS5RfnuFhYmFk', icon: <Globe className="w-5 h-5" />, color: 'bg-brand-600' }
+            { label: 'WhatsApp Group', link: links.whatsappAcademyGroup || 'https://chat.whatsapp.com/JpfoDTxUBSRCmXUu597Y44?mode=gi_t', icon: <MessageCircle className="w-5 h-5" />, color: 'bg-green-600' },
+            { label: 'Telegram Channel', link: links.telegramAcademyHub || 'https://t.me/+r0sIS5RfnuFhYmFk', icon: <Globe className="w-5 h-5" />, color: 'bg-brand-600' }
           ]}
         />
       )}
@@ -306,26 +301,13 @@ export const Home: React.FC<HomeProps> = ({
                 <p className="text-xs md:text-sm font-bold text-slate-800 leading-relaxed italic">"Join our community of nurses passing with confidence!"</p>
               </div>
             </div>
-    <div className="min-h-screen bg-white">
-      <header className="fixed top-0 w-full bg-white/80 backdrop-blur-md z-50 border-b border-slate-100">
-        <div className="max-w-7xl mx-auto px-4 h-20 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <img src={branding.logo} alt="Logo" className="w-10 h-10 rounded-lg" />
-            <span className="font-black text-xl tracking-tighter text-slate-900">ACADEMY</span>
           </div>
-          <nav className="hidden md:flex items-center gap-8">
-            <button onClick={() => onNavigate('/')} className="text-sm font-medium text-slate-600 hover:text-brand-600">Home</button>
-            <button onClick={() => onNavigate('/login')} className="px-6 py-2.5 bg-brand-600 text-white rounded-full text-sm font-bold hover:bg-brand-700 transition-all shadow-lg shadow-brand-200">Login</button>
-          </nav>
         </div>
       </section>
-      </header>
 
       {/* Our Services Section */}
       <section id="our-services" className="py-24 bg-white scroll-mt-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <main className="pt-32 pb-20">
-        <div className="max-w-7xl mx-auto px-4">
           <div className="text-center max-w-3xl mx-auto mb-20">
             <div className="inline-flex items-center bg-brand-100 text-brand-700 px-4 py-2 rounded-full text-[10px] font-black uppercase tracking-[0.2em] mb-6">
               <Briefcase className="w-3 h-3 mr-2" /> Professional Solutions
@@ -333,11 +315,6 @@ export const Home: React.FC<HomeProps> = ({
             <h2 className="text-4xl font-serif font-bold text-slate-900 mb-6">Our Services</h2>
             <p className="text-lg text-slate-600 font-medium leading-relaxed">
               We provide comprehensive support to help nurses achieve their international career goals through expert guidance and structured preparation programs.
-            <h1 className="text-5xl md:text-7xl font-black text-slate-900 tracking-tight mb-6 leading-[0.9]">
-              Master Your <span className="text-brand-600">NCLEX</span> Journey
-            </h1>
-            <p className="text-xl text-slate-600 mb-10">
-              The most comprehensive nursing education platform designed for success.
             </p>
           </div>
 
@@ -386,9 +363,8 @@ export const Home: React.FC<HomeProps> = ({
         </div>
       </section>
 
-      {/* Founder Section - Enhanced eye-catching design */}
+      {/* Founder Section */}
       <section className="py-24 bg-slate-50 relative overflow-hidden">
-        {/* New Eye-catching background elements */}
         <div className="absolute top-10 right-10 opacity-[0.05] text-brand-900 -z-0 hidden xl:block animate-soft-pulse">
           <Stethoscope className="w-80 h-80 rotate-12" />
         </div>
@@ -411,7 +387,6 @@ export const Home: React.FC<HomeProps> = ({
                   <p className="text-brand-300 font-black tracking-[0.2em] uppercase text-xs mt-2 italic">Academy Founder</p>
                 </div>
               </div>
-              {/* Floating Decorative Badge */}
               <div className="absolute -top-6 -right-6 bg-brand-600 p-5 rounded-3xl shadow-xl z-20 text-white animate-bounce">
                 <Trophy className="w-8 h-8 mb-1" />
                 <span className="text-[8px] font-black uppercase tracking-widest">Visionary</span>
@@ -430,7 +405,6 @@ export const Home: React.FC<HomeProps> = ({
                 <p>Leading the Next Generation of Licensed Nurses, where Passion Meets NCLEX Preparation. Your NCLEX Prep Starts with Me, and I am committed to Your NCLEX Victory at first attempt.</p>
               </div>
               
-              {/* Added Pillar boxes for more eye-catching content */}
               <div className="grid grid-cols-2 gap-4 mb-10">
                 <div className="flex items-center p-4 bg-white rounded-2xl shadow-sm border border-slate-100">
                   <Target className="w-5 h-5 text-brand-500 mr-3" />
@@ -711,12 +685,10 @@ export const Home: React.FC<HomeProps> = ({
               <button 
                 onClick={() => onNavigate(currentUser ? '/dashboard' : '/login')}
                 className="bg-brand-600 text-white px-10 py-5 rounded-2xl font-bold text-xl hover:bg-brand-700 transition shadow-xl animate-soft-pulse transform hover:scale-105"
-                onClick={() => onNavigate('/register')}
-                className="w-full sm:w-auto px-10 py-4 bg-brand-600 text-white rounded-full font-black text-lg hover:bg-brand-700 transition-all shadow-xl shadow-brand-200"
               >
                 Join Successful Nurses
-                Get Started Now
               </button>
+            </div>
             </div>
           </div>
         </div>
@@ -730,10 +702,10 @@ export const Home: React.FC<HomeProps> = ({
             <div className="bg-white rounded-[3rem] overflow-hidden shadow-2xl border border-gray-100 flex flex-col hover:translate-y-[-8px] transition duration-500 group">
               <div className="p-10 flex flex-col h-full bg-gradient-to-b from-brand-50/50 to-white">
                 <h3 className="text-2xl font-bold text-slate-900 mb-5 group-hover:text-brand-600 transition">{intensiveCourse?.title}</h3>
-                <p className="text-slate-600 mb-8 leading-relaxed italic text-base font-medium">{intensiveCourse?.description}</p>
+                <p className="text-slate-600 mb-8 leading-relaxed italic text-base font-medium">{(intensiveCourse as any)?.description || "Comprehensive NCLEX-RN review classes designed for success."}</p>
                 <div className="space-y-4 mb-10 flex-grow">
                   <h4 className="font-black text-[10px] text-brand-600 uppercase tracking-[0.2em] mb-4">Course Modules:</h4>
-                  {intensiveCourse?.included?.map((inc, i) => (
+                  {((intensiveCourse as any)?.included || ["Simplified Nursing Concepts", "Critical Thinking Strategies", "High-Yield Review"]).map((inc: string, i: number) => (
                     <div key={i} className="flex items-start text-slate-800 font-bold text-sm">
                       <ChevronRight className="w-4 h-4 text-brand-400 mr-2 flex-shrink-0" />
                       {inc}
@@ -799,30 +771,18 @@ export const Home: React.FC<HomeProps> = ({
                   <span className="font-bold text-xl text-slate-800 pr-6">{faq.q}</span>
                   <div className={`p-1.5 rounded-full transition-all duration-300 ${openFaq === i ? 'bg-brand-600 text-white rotate-180' : 'bg-slate-100 text-slate-400'}`}>
                     <ChevronDown className="w-6 h-6" />
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {reviews.slice(0, 3).map((review) => (
-              <div key={review.id} className="p-8 bg-slate-50 rounded-3xl border border-slate-100">
-                <div className="flex items-center gap-4 mb-6">
-                  <div className="w-12 h-12 rounded-full bg-slate-200 overflow-hidden">
-                    {review.avatar && <img src={review.avatar} alt={review.name} className="w-full h-full object-cover" />}
                   </div>
                 </button>
                 {openFaq === i && (
                   <div className="p-8 pt-0 text-lg text-slate-600 bg-slate-50 leading-relaxed font-medium">
                     {faq.a}
-                  <div>
-                    <h3 className="font-bold text-slate-900">{review.name}</h3>
-                    <p className="text-xs text-slate-500">{review.role}</p>
                   </div>
                 )}
-                </div>
-                <p className="text-slate-600 italic">"{review.text}"</p>
               </div>
             ))}
           </div>
         </div>
       </section>
-      </main>
 
       {/* Contact Section Preview */}
       <section id="contact" className="py-24 bg-slate-900 text-white text-center">
@@ -852,13 +812,13 @@ export const Home: React.FC<HomeProps> = ({
                <p className="opacity-60 underline font-medium text-sm">Join our community</p>
              </div>
           </div>
-      <footer className="bg-slate-900 py-20 text-white">
-        <div className="max-w-7xl mx-auto px-4 text-center">
-          <p className="text-slate-400 text-sm">© 2026 Academy. All rights reserved.</p>
         </div>
       </section>
+
+      {/* Footer */}
+      <footer className="bg-slate-900 py-20 text-white text-center border-t border-slate-800">
+        <p className="text-slate-400 text-sm">© 2026 Academy. All rights reserved.</p>
       </footer>
     </div>
   );
-};
 };
