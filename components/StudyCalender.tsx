@@ -37,7 +37,7 @@ interface Event {
   description?: string;
 }
 
-export const StudyCalendar: React.FC = () => {
+const StudyCalendar: React.FC = () => {
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [events, setEvents] = useState<Event[]>([
