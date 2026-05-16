@@ -413,4 +413,6 @@ export const StudyCalendar: React.FC = () => {
   );
 };
 
+export default StudyCalendar;
+
 
