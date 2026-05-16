@@ -171,62 +171,78 @@ export const Home: React.FC<HomeProps> = ({
     </div>
   );
 
-  const ReviewCard = ({ review }: { review: Review }) => (
-    <div className="bg-white p-8 rounded-[2rem] shadow-sm border border-slate-100 flex flex-col hover:shadow-md transition duration-300">
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex">
-          {[...Array(review.rating)].map((_, starIdx) => (
-            <Star key={starIdx} className="w-4 h-4 text-yellow-400 fill-current" />
-          ))}
-        </div>
-        <span className="text-[10px] text-slate-400 font-bold uppercase">{review.createdAt.toLocaleDateString()}</span>
-      </div>
-      <p className="text-slate-600 mb-6 italic flex-grow leading-relaxed">"{review.text}"</p>
-      
-      <div className="flex items-center justify-between mt-4">
-        <div className="flex items-center">
-          {review.avatar ? (
-            <img src={review.avatar} alt={review.name} className="w-10 h-10 rounded-full mr-3 shadow-inner object-cover border border-slate-100" />
-          ) : (
-            <div className="w-10 h-10 bg-brand-100 rounded-full flex items-center justify-center mr-3 font-black text-brand-600 text-xs shadow-inner">
-              {review.name.charAt(0)}
-            </div>
-          )}
-          <div>
-            <p className="font-bold text-slate-900 text-sm">{review.name}</p>
-            <p className="text-[10px] font-black uppercase text-brand-500 tracking-wider">{review.role}</p>
+  const ReviewCard = ({ review }: { review: Review }) => {
+    const [expanded, setExpanded] = useState(false);
+    const words = review.text.split(' ');
+    const threshold = 50; // Approximate word count for 6 lines
+    const isTooLong = words.length > threshold;
+    const displayText = expanded ? review.text : isTooLong ? `${words.slice(0, threshold).join(' ')}...` : review.text;
+
+    return (
+      <div className="bg-white p-8 rounded-[2rem] shadow-sm border border-slate-100 flex flex-col hover:shadow-md transition duration-300">
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex">
+            {[...Array(review.rating)].map((_, starIdx) => (
+              <Star key={starIdx} className="w-4 h-4 text-yellow-400 fill-current" />
+            ))}
           </div>
+          <span className="text-[10px] text-slate-400 font-bold uppercase">{review.createdAt.toLocaleDateString()}</span>
         </div>
-        <button 
-          onClick={() => {
-            if (!currentUser) onNavigate('/login');
-            else onLike(review.id);
-          }} 
-          className={`flex items-center px-3 py-1.5 rounded-full transition ${userLikes.includes(review.id) ? 'bg-brand-50 text-brand-600' : 'text-slate-400 hover:bg-slate-50'}`}
-        >
-          <ThumbsUp className={`w-4 h-4 mr-1.5 ${userLikes.includes(review.id) ? 'fill-current' : ''}`} />
-          <span className="text-xs font-black">{review.likes}</span>
-        </button>
-      </div>
-
-      {(review.replies || []).length > 0 && (
-        <div className="mt-6 pt-4 border-t border-slate-50 space-y-4">
-          {review.replies.map(r => (
-            <div key={r.id} className="bg-slate-50 p-4 rounded-2xl ml-4 relative">
-              <div className="absolute top-4 left-0 w-2 h-px bg-slate-200 -ml-2"></div>
-              <div className="flex items-center gap-2 mb-1">
-                {r.avatar && <img src={r.avatar} className="w-4 h-4 rounded-full" />}
-                <p className="text-[10px] font-black text-brand-600 uppercase">{r.name}</p>
+        <p className="text-slate-600 mb-2 italic flex-grow leading-relaxed">"{displayText}"</p>
+        {isTooLong && (
+          <button 
+            onClick={() => setExpanded(!expanded)} 
+            className="text-[10px] font-black uppercase text-brand-600 tracking-widest mb-6 hover:text-brand-700 transition"
+          >
+            {expanded ? 'See Less' : 'See More'}
+          </button>
+        )}
+        
+        <div className="flex items-center justify-between mt-auto pt-4 border-t border-slate-50">
+          <div className="flex items-center">
+            {review.avatar ? (
+              <img src={review.avatar} alt={review.name} className="w-10 h-10 rounded-full mr-3 shadow-inner object-cover border border-slate-100" />
+            ) : (
+              <div className="w-10 h-10 bg-brand-100 rounded-full flex items-center justify-center mr-3 font-black text-brand-600 text-xs shadow-inner">
+                {review.name.charAt(0)}
               </div>
-              <p className="text-xs text-slate-600 font-medium leading-relaxed">{r.text}</p>
+            )}
+            <div>
+              <p className="font-bold text-slate-900 text-sm">{review.name}</p>
+              <p className="text-[10px] font-black uppercase text-brand-500 tracking-wider">{review.role}</p>
             </div>
-          ))}
+          </div>
+          <button 
+            onClick={() => {
+              if (!currentUser) onNavigate('/login');
+              else onLike(review.id);
+            }} 
+            className={`flex items-center px-3 py-1.5 rounded-full transition ${userLikes.includes(review.id) ? 'bg-brand-50 text-brand-600' : 'text-slate-400 hover:bg-slate-50'}`}
+          >
+            <ThumbsUp className={`w-4 h-4 mr-1.5 ${userLikes.includes(review.id) ? 'fill-current' : ''}`} />
+            <span className="text-xs font-black">{review.likes}</span>
+          </button>
         </div>
-      )}
 
-      <ReviewReplyInput reviewId={review.id} reviewerName={review.name} onReply={onReply} currentUser={currentUser} onNavigate={onNavigate} />
-    </div>
-  );
+        {(review.replies || []).length > 0 && (
+          <div className="mt-6 pt-4 border-t border-slate-50 space-y-4">
+            {review.replies.map(r => (
+              <div key={r.id} className="bg-slate-50 p-4 rounded-2xl ml-4 relative">
+                <div className="absolute top-4 left-0 w-2 h-px bg-slate-200 -ml-2"></div>
+                <div className="flex items-center gap-2 mb-1">
+                  {r.avatar && <img src={r.avatar} className="w-4 h-4 rounded-full" />}
+                  <p className="text-[10px] font-black text-brand-600 uppercase">{r.name}</p>
+                </div>
+                <p className="text-xs text-slate-600 font-medium leading-relaxed">{r.text}</p>
+              </div>
+            ))}
+          </div>
+        )}
+
+        <ReviewReplyInput reviewId={review.id} reviewerName={review.name} onReply={onReply} currentUser={currentUser} onNavigate={onNavigate} />
+      </div>
+    );
+  };
 
   return (
     <div className="bg-white">

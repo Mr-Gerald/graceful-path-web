@@ -191,43 +191,21 @@ function App() {
   };
 
   const fetchReviews = async () => {
-    // Attempt 1: Full join with profiles and replies
+    // Attempt 1: Safe fetch with optional profile details
     try {
       const { data, error } = await supabase
         .from('reviews')
-        .select('id, user_id, text, rating, role, likes, created_at, profiles(name, avatar), review_replies(id, name, text, created_at)')
+        .select(`
+          id, 
+          user_id, 
+          text, 
+          rating, 
+          role, 
+          likes, 
+          created_at
+        `)
         .order('created_at', { ascending: false });
         
-      if (!error && data) {
-        const formattedReviews: Review[] = data.map((r: any) => ({
-          id: r.id,
-          name: ((r as any).profiles?.[0]?.name || (r as any).profiles?.name) || (r as any).name || 'Nursing Student',
-          avatar: ((r as any).profiles?.[0]?.avatar || (r as any).profiles?.avatar) || (r as any).avatar || '',
-          text: r.text,
-          rating: r.rating,
-          role: r.role,
-          likes: r.likes || 0,
-          replies: (r.review_replies || []).map((rp: any) => ({
-            id: rp.id,
-            name: rp.name,
-            avatar: '',
-            text: rp.text,
-            createdAt: new Date(rp.created_at)
-          })),
-          createdAt: new Date(r.created_at)
-        }));
-        setReviews(formattedReviews);
-        return;
-      }
-    } catch (e) { console.warn("Attempt 1 failed:", e); }
-
-    // Attempt 2: Simple fetch without joins
-    try {
-      const { data, error } = await supabase
-        .from('reviews')
-        .select('*')
-        .order('created_at', { ascending: false });
-
       if (!error && data) {
         const formattedReviews: Review[] = data.map((r: any) => ({
           id: r.id,
@@ -235,7 +213,7 @@ function App() {
           avatar: r.avatar || '',
           text: r.text,
           rating: r.rating,
-          role: r.role,
+          role: r.role || 'Nursing Student',
           likes: r.likes || 0,
           replies: [],
           createdAt: new Date(r.created_at)
@@ -243,22 +221,23 @@ function App() {
         setReviews(formattedReviews);
         return;
       }
-    } catch (e) { console.warn("Attempt 2 failed:", e); }
+      if (error) console.warn("Primary review fetch error:", error);
+    } catch (e) { console.warn("Attempt 1 failed:", e); }
 
-    // Attempt 3: Minimal fetch
+    // Attempt 2: Minimal fallback
     try {
-      const { data, error } = await supabase
+      const { data } = await supabase
         .from('reviews')
         .select('id, text, rating')
-        .limit(20);
+        .limit(10);
 
-      if (!error && data) {
+      if (data) {
         const formattedReviews: Review[] = data.map((r: any) => ({
           id: r.id,
-          name: 'Nursing Student',
+          name: 'Anonymous',
           avatar: '',
-          text: r.text,
-          rating: r.rating,
+          text: r.text || '',
+          rating: r.rating || 5,
           role: 'Nursing Student',
           likes: 0,
           replies: [],
@@ -266,7 +245,7 @@ function App() {
         }));
         setReviews(formattedReviews);
       }
-    } catch (e) { console.error("All fetch attempts failed:", e); }
+    } catch (e) { console.error("All review fetch attempts failed:", e); }
   };
 
   const handleDeleteReview = async (id: string) => {
@@ -297,18 +276,9 @@ function App() {
         const links = essentials.find((d: any) => d.id === 'links')?.data;
         const edate = essentials.find((d: any) => d.id === 'exam_date')?.data;
 
-        if (branding && typeof branding === 'object') {
-          setBrandingAssets(prev => ({ 
-            ...prev, 
-            ...branding
-          }));
-        }
-        if (links && typeof links === 'object') {
-          setGlobalLinks(prev => ({ ...prev, ...links }));
-        }
-        if (edate && edate.date) {
-          setExamDate(edate.date);
-        }
+        if (branding && typeof branding === 'object') setBrandingAssets(prev => ({ ...prev, ...branding }));
+        if (links) setGlobalLinks(links);
+        if (edate) setExamDate(edate.date || 'April 25, 2026');
       }
 
       // 2. Fetch heavier content in background
@@ -734,6 +704,17 @@ function App() {
     setError(''); // Clear error on navigation
   };
 
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-white">
+        <div className="flex flex-col items-center">
+          <div className="w-16 h-16 border-4 border-brand-200 border-t-brand-600 rounded-full animate-spin"></div>
+          <p className="mt-6 font-black text-[10px] uppercase tracking-[0.3em] text-slate-400">Loading Academy...</p>
+        </div>
+      </div>
+    );
+  }
+
   const handleForgotPassword = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
@@ -777,24 +758,13 @@ function App() {
     }
   }, [brandingAssets.favicon]);
 
-  if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-white">
-        <div className="flex flex-col items-center">
-          <div className="w-16 h-16 border-4 border-brand-200 border-t-brand-600 rounded-full animate-spin"></div>
-          <p className="mt-6 font-black text-[10px] uppercase tracking-[0.3em] text-slate-400">Loading Academy...</p>
-        </div>
-      </div>
-    );
-  }
-
   const renderContent = () => {
     switch (currentPath) {
       case '/':
         return <Home onNavigate={navigate} reviews={reviews} links={globalLinks} branding={brandingAssets} onLike={handleLikeReview} onReply={handleReplyReview} onAddReview={addReview} userLikes={userLikes} currentUser={currentUser} />;
       case '/dashboard':
         return currentUser ? (
-          <StudentDashboard user={currentUser} onLogout={() => setShowLogoutConfirm(true)} addReview={addReview} notifications={notifications.filter(n => n.user_id === 'ALL' || n.user_id === currentUser.id)} onDeleteNotification={async (id) => { await supabase.from('notifications').delete().eq('id', id); fetchNotifications(); }} courseContent={courseContent} practiceTests={practiceTests} materials={materials} links={globalLinks} examDate={examDate} onUpdateProfile={() => fetchUserProfile(currentUser.id)} />
+          <StudentDashboard user={currentUser} branding={brandingAssets} onLogout={() => setShowLogoutConfirm(true)} addReview={addReview} notifications={notifications.filter(n => n.user_id === 'ALL' || n.user_id === currentUser.id)} onDeleteNotification={async (id) => { await supabase.from('notifications').delete().eq('id', id); fetchNotifications(); }} courseContent={courseContent} practiceTests={practiceTests} materials={materials} links={globalLinks} examDate={examDate} onUpdateProfile={() => fetchUserProfile(currentUser.id)} />
         ) : <Home onNavigate={navigate} reviews={reviews} links={globalLinks} branding={brandingAssets} onLike={handleLikeReview} onReply={handleReplyReview} onAddReview={addReview} userLikes={userLikes} currentUser={currentUser} />;
       case '/admin':
         return currentUser?.role === UserRole.ADMIN ? (

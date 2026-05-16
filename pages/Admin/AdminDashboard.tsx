@@ -1057,12 +1057,12 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
       )}
 
       <div className="lg:hidden flex items-center justify-between p-4 bg-slate-900 text-white sticky top-0 z-50 shadow-lg">
-        <Logo />
+        <Logo src={branding?.logo} />
         <button onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} className="p-2"><Menu className="w-7 h-7" /></button>
       </div>
 
       <aside className={`w-full lg:w-80 bg-slate-900 text-white flex-col ${isMobileMenuOpen ? 'fixed inset-0 z-[100] flex' : 'hidden lg:flex'} transition-all duration-300 shadow-2xl overflow-y-auto h-screen sticky top-0`}>
-        <div className="flex items-center justify-center lg:justify-start px-4 py-6 border-b border-white/5 mb-6"><Logo /></div>
+        <div className="flex items-center justify-center lg:justify-start px-4 py-6 border-b border-white/5 mb-6"><Logo src={branding?.logo} /></div>
         <nav className="flex-grow px-6 space-y-3">
           {adminLinks.map(l => (
             <button key={l.label} onClick={() => { setActiveTab(l.label); setIsMobileMenuOpen(false); setEditingTest(null); }} className={`w-full flex items-center p-5 rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all duration-200 ${activeTab === l.label ? 'bg-brand-600 text-white shadow-lg' : 'text-slate-400 hover:bg-white/5 hover:text-white'}`}>

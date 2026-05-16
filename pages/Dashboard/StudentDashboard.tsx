@@ -8,9 +8,9 @@ import {
   Lock, Download, Star, MessageCircle, X, Menu, Trash2, Heart, ShieldCheck, Zap, Globe, CreditCard,
   User as UserIcon, Camera, Key, Mail, Phone, AtSign, Edit2, Upload as UploadIcon, ChevronDown, CheckCircle
 } from 'lucide-react';
-import { User, PracticeTest, QuizQuestion, Notification, Module, Lesson, NavLink, GlobalLinks } from '../../types';
+import { User, PracticeTest, QuizQuestion, Notification, Module, Lesson, NavLink, GlobalLinks, BrandingAssets } from '../../types';
 import { Logo } from '../../components/Layout';
-import StudyCalendar from '../../components/StudyCalender';
+import StudyCalendar from '../../components/StudyCalendar';
 import { supabase } from '../../services/supabaseClient';
 import { COUNTRY_LIST } from '../../constants';
 
@@ -26,6 +26,7 @@ interface StudentDashboardProps {
   links: GlobalLinks;
   examDate: string;
   onUpdateProfile: () => void;
+  branding?: BrandingAssets;
 }
 
 const getRelativeTime = (dateInput: string | Date) => {
@@ -69,7 +70,7 @@ const NCLEX_INSIGHTS = [
 
 export const StudentDashboard: React.FC<StudentDashboardProps> = ({ 
   user, onLogout, addReview, notifications, onDeleteNotification, 
-  courseContent, practiceTests, materials, links, examDate, onUpdateProfile
+  courseContent, practiceTests, materials, links, examDate, onUpdateProfile, branding
 }) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [currentView, setCurrentView] = useState('Dashboard');
@@ -1239,12 +1240,12 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col lg:flex-row transition-all duration-300">
       <div className="lg:hidden flex items-center justify-between p-4 bg-white border-b border-gray-100 sticky top-0 z-50">
-        <Logo />
+        <Logo src={branding?.logo} />
         <button onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} className="p-3 bg-slate-50 rounded-xl"><Menu className="w-6 h-6 text-slate-700" /></button>
       </div>
 
       <aside className={`${isCollapsed ? 'lg:w-24' : 'lg:w-80'} ${isMobileMenuOpen ? 'fixed inset-0 z-50 bg-white flex' : 'hidden lg:flex'} border-r border-gray-100 flex-col transition-all duration-300 bg-white`}>
-        <div className="hidden lg:block border-b border-slate-50 mb-6"><Logo /></div>
+        <div className="hidden lg:block border-b border-slate-50 mb-6"><Logo src={branding?.logo} /></div>
         <nav className="flex-grow px-6 space-y-2 mt-4 overflow-y-auto">
           {DASHBOARD_LINKS.map(l => (
             <button key={l.label} onClick={() => { setCurrentView(l.label); setIsMobileMenuOpen(false); setActiveTest(null); }} className={`w-full flex items-center px-6 py-4 rounded-2xl font-black text-xs uppercase tracking-widest transition-all duration-300 ${currentView === l.label ? 'bg-brand-600 text-white shadow-xl shadow-brand-100' : 'text-slate-400 hover:bg-brand-50 hover:text-brand-600'}`}>
