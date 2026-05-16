@@ -37,7 +37,7 @@ interface Event {
   description?: string;
 }
 
-const StudyCalendar: React.FC = () => {
+export const StudyCalendar: React.FC = () => {
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [events, setEvents] = useState<Event[]>([
@@ -413,6 +413,5 @@ const StudyCalendar: React.FC = () => {
   );
 };
 
-export default StudyCalendar;
 
 
