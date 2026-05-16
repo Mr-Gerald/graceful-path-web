@@ -37,7 +37,7 @@ interface Event {
   description?: string;
 }
 
-export default function StudyCalendar() {
+export const StudyCalendar = () => {
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [events, setEvents] = useState<Event[]>([
