@@ -10,7 +10,7 @@ import {
 } from 'lucide-react';
 import { User, PracticeTest, QuizQuestion, Notification, Module, Lesson, NavLink, GlobalLinks, BrandingAssets } from '../../types';
 import { Logo } from '../../components/Layout';
-import { StudyCalendar } from '../../components/StudyCalendar';
+import StudyCalendar from '../../components/StudyCalendar';
 import { supabase } from '../../services/supabaseClient';
 import { COUNTRY_LIST } from '../../constants';
 
